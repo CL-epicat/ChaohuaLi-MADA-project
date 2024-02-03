@@ -1,21 +1,14 @@
 ---
-title: "Example Manuscript Template for a Data Analysis Project"
+title: "All-cause Mortality Rates and Primary Care Physician Supply in US Counties 2021"
 subtitle: ""
-author: Andreas Handel
+author: Chaohua Li
 date: "`r Sys.Date()`"
 format:
   docx:
     toc: false
     number-sections: true
     highlight-style: github
-bibliography: ../assets/dataanalysis-references.bib
-csl: ../assets/apa.csl
 ---
-
-The structure below is one possible setup for a data analysis project (including the course project). For a manuscript, adjust as needed. 
-You don't need to have exactly these sections, but the content covering those sections should be addressed.
-
-This uses MS Word as output format. [See here](https://quarto.org/docs/output-formats/ms-word.html) for more information. You can switch to other formats, like html or pdf. See [the Quarto documentation](https://quarto.org/) for other formats.
 
 
 ```{r, echo=FALSE, message=FALSE}
@@ -25,30 +18,58 @@ library(knitr)
 ```
 
 
-
+# Part 1
 # Summary/Abstract
-_Write a summary of your project._
-
+In this project, I will conduct a cross-sectional study on the county level and 
+examine the potential association between age-adjusted all-cause mortality rate and 
+primary care physician supply for US counties. A multilevel linear model will be 
+used, and multiple potential confounders will be accounted for in the model. 
 
 {{< pagebreak >}}
-
 
 # Introduction 
 
 ## General Background Information
-_Provide enough background on your topic that others can understand the why and how of your analysis_ 
+The all-cause mortality rate is an important indicator of general population health. 
+Although the age-adjusted all-cause mortality rate consistently declined in the US
+from 1935 to 2014, a notable increasing trend after 2015 has been observed (1).
+Personal level access to primary care is highly associated with mortality, morbidity,
+and healthcare costs (2). There is a need to study how primary care physician supply 
+on the geographic levels is associated with all-cause mortality rates in the US. 
 
 ## Description of data and data source
-_Describe what the data is, what it contains, where it is from, etc. Eventually this might be part of a methods section._
+Three data sources will be used for this study. 
+(1) Multiple Cause of Death File of 2021 from CDC WONDER (https://wonder.cdc.gov/mcd.html).
+I will obtain county-level age-adjusted all-cause mortality rates (deaths/100k people) from this source.
+(2) Area Health Resource File of 2021 from U.S. Department of Health & Human Services (https://data.hrsa.gov/data/download). I will obtain county-level primary care physician 
+supply (physicians/100k people) and rural/urban categorization of the county from this file. 
+(3) estimates of 2021 from 2017-2021 5-year American Community Survey (https://www.nhgis.org/). 
+I will obtain states, regions, and some county-level socioeconomic measures as potential confounders for modeling. 
+These measures may include %Living under poverty line, %Without a high school diploma,
+%Hispanic, %NH-Black, %Unemployed, %Without health insurance, and so on. 
+
+Data from the three sources will be merged by using the FIPS code which serves as the 
+ID for counties.  
 
 ## Questions/Hypotheses to be addressed
-_State the research questions you plan to answer with this analysis._
+My hypothesis is that primary care physician supply is negatively associated with 
+age-adjusted all-cause mortality rate among US counties.Since counties can be 
+considered nested within states or regions, a multilevel linear model will be used. 
+The dependent variable will be mortality rate, main predictor will be primary care 
+physician supply, and the socioeconomic measures will be the covariates in the model.
+
+## Reference
+1.Woolf SH, Wolf ER, Rivara FP. The New Crisis of Increasing All-Cause Mortality in US Children and Adolescents. JAMA. 2023;329(12):975–976. doi:10.1001/jama.2023.3517
+2.Peart A, Lewis V, Brown T, Russell G. Patient navigators facilitating access to primary care: a scoping review. BMJ Open. 2018 Mar 17;8(3):e019252. doi: 10.1136/bmjopen-2017-019252. PMID: 29550777; PMCID: PMC5875656.
+
+
+
+
+
 
 To cite other work (important everywhere, but likely happens first in introduction), make sure your references are in the bibtex file specified in the YAML header above (here `dataanalysis_template_references.bib`) and have the right bibtex key. Then you can include like this:
 
 Examples of reproducible research projects can for instance be found in [@mckay2020; @mckay2020a].
-
-
 
 {{< pagebreak >}}
 
@@ -60,15 +81,7 @@ _Describe your methods. That should describe the data, the cleaning processes, a
 
 ## Schematic of workflow
 
-Sometimes you might want to show a schematic diagram/figure that was not created with code (if you can do it with code, do it). @fig-schematic is an example of some - completely random/unrelated - schematic that was generated with Biorender.
-We store those figures in the `assets` folder.
 
-```{r}
-#| label: fig-schematic
-#| fig-cap: "A figure that is manually generated and shows some overview/schematic. This has nothing to do with the data, it's just a random one from one of our projects I found and placed here."
-#| echo: FALSE
-knitr::include_graphics(here("products","assets","antigen-recognition.png"))
-```
 
 
 
@@ -95,18 +108,6 @@ _Explain anything related to your statistical analyses._
 _Use a combination of text/tables/figures to explore and describe your data. Show the most important descriptive results here. Additional ones should go in the supplement. Even more can be in the R and Quarto files that are part of your project._
 
 
-@tbl-summarytable shows a summary of the data.
-
-Note the loading of the data providing a **relative** path using the `../../` notation. (Two dots means a folder up). You never want to specify an **absolute** path like `C:\ahandel\myproject\results\` because if you share this with someone, it won't work for them since they don't have that path. You can also use the `here` R package to create paths. See examples of that below.
-
-```{r}
-#| label: tbl-summarytable
-#| tbl-cap: "Data summary table."
-#| echo: FALSE
-resulttable=readRDS("../../results/summarytable.rds")
-knitr::kable(resulttable)
-```
-
 
 
 ## Basic statistical analysis
@@ -114,29 +115,12 @@ knitr::kable(resulttable)
 _To get some further insight into your data, if reasonable you could compute simple statistics (e.g. simple models with 1 predictor) to look for associations between your outcome(s) and each individual predictor variable. Though note that unless you pre-specified the outcome and main exposure, any "p<0.05 means statistical significance" interpretation is not valid._
 
 
-@fig-result shows a scatterplot figure produced by one of the R scripts.
-
-```{r}
-#| label: fig-result
-#| fig-cap: "Height and weight stratified by gender."
-#| echo: FALSE
-knitr::include_graphics(here("results","height-weight-stratified.png"))
-```
 
 
 ## Full analysis
 
 _Use one or several suitable statistical/machine learning methods to analyze your data and to produce meaningful figures, tables, etc. This might again be code that is best placed in one or several separate R scripts that need to be well documented. You want the code to produce figures and data ready for display as tables, and save those. Then you load them here._
 
-Example @tbl-resulttable2 shows a summary of a linear model fit.
-
-```{r}
-#| label: tbl-resulttable2
-#| tbl-cap: "Linear model fit table."
-#| echo: FALSE
-resulttable2 = readRDS(here("results","tables-files","resulttable2.rds"))
-knitr::kable(resulttable2)
-```
 
 
 {{< pagebreak >}}
