@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.537">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Chaohua Li">
+<meta name="dcterms.date" content="2024-02-21">
+
+<title>Data processing for MADA project</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="processingfile_files/libs/clipboard/clipboard.min.js"></script>
+<script src="processingfile_files/libs/quarto-html/quarto.js"></script>
+<script src="processingfile_files/libs/quarto-html/popper.min.js"></script>
+<script src="processingfile_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="processingfile_files/libs/quarto-html/anchor.min.js"></script>
+<link href="processingfile_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="processingfile_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="processingfile_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="processingfile_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="processingfile_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Data processing for MADA project</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Chaohua Li </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 21, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="load-packages" class="level1">
+<h1>Load packages</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven) <span class="co">#for loading sas dataset</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) <span class="co">#for data processing/cleaning</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.4.4     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Hmisc) <span class="co">#to summarize dataset</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'Hmisc'
+
+The following objects are masked from 'package:dplyr':
+
+    src, summarize
+
+The following objects are masked from 'package:base':
+
+    format.pval, units</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here) <span class="co">#to set paths</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>here() starts at C:/Users/chaoh/Desktop/UGA Courses/4_Spring 2024/EPID 8060E/MADA/ChaohuaLi-MADA-project</code></pre>
+</div>
+</div>
+</section>
+<section id="load-data" class="level1">
+<h1>Load data</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#load county-level age-adjusted all-cause mortality rate data from txt file</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>mortality <span class="ot">&lt;-</span> <span class="fu">read.table</span>(<span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"raw-data"</span>,<span class="st">"cdc_wonder_mortality.txt"</span>), <span class="at">header =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#load primary care physician (PCP) supply data from sas7bdat file</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>ahrf<span class="ot">&lt;-</span> <span class="fu">read_sas</span>(<span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"raw-data"</span>,<span class="st">"ahrf2023.sas7bdat"</span>))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">#load American Community Survey (ACS) data from csv file</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>acs <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"raw-data"</span>,<span class="st">"nhgis0107_ds254_20215_county.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="keep-only-the-variables-needed-for-the-project-and-merge-them-into-a-single-dataset" class="level1">
+<h1>Keep only the variables needed for the project and merge them into a single dataset</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#subsetting variables from mortality data</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mortality1 <span class="ot">&lt;-</span> mortality[,<span class="fu">c</span>(<span class="st">"County.Code"</span>,<span class="st">"Population"</span>,<span class="st">"Rate"</span>)]</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#subsetting variables from PCP supply data</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>ahrf1<span class="ot">&lt;-</span> ahrf[,<span class="fu">c</span>(<span class="st">"phys_nf_prim_care_pc_exc_rsdt_21"</span>,<span class="st">"fips_st_cnty"</span>,<span class="st">"rural_urban_contnm_13"</span>)]</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>ahrf1<span class="sc">$</span>fips<span class="ot">&lt;-</span><span class="fu">as.numeric</span>(ahrf1<span class="sc">$</span>fips_st_cnty) <span class="co">#create a numeric FIPS code for merging</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#subsetting variables from ACS data</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>acs1 <span class="ot">&lt;-</span> acs[,<span class="fu">c</span>(<span class="st">"STUSAB"</span>,<span class="st">"TL_GEO_ID"</span>, <span class="st">"AOOCE001"</span>,<span class="st">"AOOCE012"</span>,<span class="st">"AOOCE004"</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>              <span class="st">"AOP8E001"</span>, <span class="st">"AOP8E002"</span>,<span class="st">"AOP8E003"</span>,<span class="st">"AOP8E004"</span>,<span class="st">"AOP8E005"</span>,<span class="st">"AOP8E006"</span>,<span class="st">"AOP8E007"</span>,<span class="st">"AOP8E008"</span>,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>              <span class="st">"AOP8E009"</span>,<span class="st">"AOP8E010"</span>,<span class="st">"AOP8E011"</span>,<span class="st">"AOP8E012"</span>,<span class="st">"AOP8E013"</span>,<span class="st">"AOP8E014"</span>,<span class="st">"AOP8E015"</span>,<span class="st">"AOP8E016"</span>,</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>              <span class="st">"AOXWE001"</span>,<span class="st">"AOXWE002"</span>,<span class="st">"AOXWE003"</span>,</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>              <span class="st">"AOSJE003"</span>,<span class="st">"AOSJE004"</span>,<span class="st">"AOSJE005"</span>,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>              <span class="st">"APEME001"</span>,<span class="st">"APEME005"</span>,<span class="st">"APEME008"</span>,<span class="st">"APEME011"</span>,<span class="st">"APEME014"</span>,<span class="st">"APEME017"</span>,<span class="st">"APEME020"</span>,<span class="st">"APEME023"</span>,</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>              <span class="st">"APEME026"</span>,<span class="st">"APEME029"</span>,<span class="st">"APEME033"</span>,<span class="st">"APEME036"</span>,<span class="st">"APEME039"</span>,<span class="st">"APEME042"</span>,<span class="st">"APEME045"</span>,<span class="st">"APEME048"</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>              ,<span class="st">"APEME051"</span>,<span class="st">"APEME054"</span>,<span class="st">"APEME057"</span>)]</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="co">#merge into one dataset</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>merged <span class="ot">&lt;-</span> acs1 <span class="sc">%&gt;%</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(mortality1, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"TL_GEO_ID"</span> <span class="ot">=</span> <span class="st">"County.Code"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(ahrf1, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"TL_GEO_ID"</span> <span class="ot">=</span> <span class="st">"fips"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="process-dataset-for-future-analysis" class="level1">
+<h1>Process dataset for future analysis</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#preview dataset before processing</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(merged)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 3,221
+Columns: 51
+$ STUSAB                           &lt;chr&gt; "AL", "AL", "AL", "AL", "AL", "AL", "…
+$ TL_GEO_ID                        &lt;dbl&gt; 1001, 1003, 1005, 1007, 1009, 1011, 1…
+$ AOOCE001                         &lt;int&gt; 58239, 227131, 25259, 22412, 58884, 1…
+$ AOOCE012                         &lt;int&gt; 1775, 10634, 1176, 634, 5612, 888, 30…
+$ AOOCE004                         &lt;int&gt; 11464, 19749, 11934, 4905, 746, 7164,…
+$ AOP8E001                         &lt;int&gt; 39614, 161977, 17995, 16057, 40668, 6…
+$ AOP8E002                         &lt;int&gt; 270, 1309, 335, 310, 794, 151, 288, 9…
+$ AOP8E003                         &lt;int&gt; 16, 0, 0, 0, 19, 0, 16, 0, 0, 0, 0, 0…
+$ AOP8E004                         &lt;int&gt; 0, 18, 0, 25, 0, 0, 0, 8, 0, 0, 0, 0,…
+$ AOP8E005                         &lt;int&gt; 0, 0, 38, 0, 5, 0, 0, 0, 22, 2, 5, 0,…
+$ AOP8E006                         &lt;int&gt; 0, 110, 41, 0, 4, 0, 8, 0, 0, 28, 0, …
+$ AOP8E007                         &lt;int&gt; 25, 28, 107, 2, 28, 58, 0, 161, 29, 0…
+$ AOP8E008                         &lt;int&gt; 28, 163, 0, 0, 170, 0, 0, 62, 16, 35,…
+$ AOP8E009                         &lt;int&gt; 4, 61, 48, 54, 154, 28, 0, 56, 73, 36…
+$ AOP8E010                         &lt;int&gt; 94, 672, 59, 160, 820, 45, 88, 444, 1…
+$ AOP8E011                         &lt;int&gt; 79, 242, 239, 84, 323, 61, 44, 406, 2…
+$ AOP8E012                         &lt;int&gt; 287, 797, 469, 353, 444, 96, 65, 1360…
+$ AOP8E013                         &lt;int&gt; 568, 1812, 645, 359, 656, 101, 340, 1…
+$ AOP8E014                         &lt;int&gt; 1287, 3253, 915, 576, 1224, 331, 303,…
+$ AOP8E015                         &lt;int&gt; 767, 2516, 1024, 670, 1166, 247, 414,…
+$ AOP8E016                         &lt;int&gt; 701, 3574, 458, 532, 843, 422, 366, 1…
+$ AOXWE001                         &lt;int&gt; 57790, 223772, 22250, 21000, 58323, 9…
+$ AOXWE002                         &lt;int&gt; 3612, 9048, 2854, 1906, 3086, 1010, 1…
+$ AOXWE003                         &lt;int&gt; 4235, 11550, 3036, 1652, 4634, 2055, …
+$ AOSJE003                         &lt;int&gt; 26623, 108361, 9369, 9107, 25798, 393…
+$ AOSJE004                         &lt;int&gt; 25871, 104367, 8561, 8223, 24244, 381…
+$ AOSJE005                         &lt;int&gt; 752, 3994, 808, 884, 1554, 118, 530, …
+$ APEME001                         &lt;int&gt; 56955, 224339, 22295, 21000, 58437, 1…
+$ APEME005                         &lt;int&gt; 9, 344, 5, 0, 169, 3, 0, 41, 53, 9, 3…
+$ APEME008                         &lt;int&gt; 143, 1201, 107, 65, 216, 9, 47, 390, …
+$ APEME011                         &lt;int&gt; 311, 1896, 406, 176, 636, 150, 155, 1…
+$ APEME014                         &lt;int&gt; 605, 2306, 317, 360, 636, 197, 211, 2…
+$ APEME017                         &lt;int&gt; 638, 2156, 222, 254, 748, 72, 254, 10…
+$ APEME020                         &lt;int&gt; 298, 1898, 119, 280, 370, 186, 108, 1…
+$ APEME023                         &lt;int&gt; 329, 1286, 61, 86, 425, 13, 108, 782,…
+$ APEME026                         &lt;int&gt; 0, 217, 0, 0, 0, 0, 0, 46, 39, 0, 2, …
+$ APEME029                         &lt;int&gt; 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 69, 0, …
+$ APEME033                         &lt;int&gt; 0, 72, 23, 18, 44, 0, 0, 62, 37, 7, 1…
+$ APEME036                         &lt;int&gt; 148, 1367, 19, 11, 55, 0, 174, 318, 2…
+$ APEME039                         &lt;int&gt; 458, 1627, 72, 188, 289, 219, 238, 80…
+$ APEME042                         &lt;int&gt; 495, 2417, 325, 195, 579, 26, 115, 13…
+$ APEME045                         &lt;int&gt; 426, 1743, 255, 174, 557, 18, 277, 12…
+$ APEME048                         &lt;int&gt; 148, 1931, 207, 92, 834, 79, 281, 110…
+$ APEME051                         &lt;int&gt; 471, 1212, 169, 196, 271, 44, 188, 97…
+$ APEME054                         &lt;int&gt; 17, 66, 0, 0, 10, 0, 0, 16, 0, 0, 0, …
+$ APEME057                         &lt;int&gt; 0, 82, 6, 0, 15, 0, 0, 25, 10, 10, 0,…
+$ Population                       &lt;int&gt; 59095, 239294, 24964, 22477, 59041, 1…
+$ Rate                             &lt;chr&gt; "1199.8", "1294.6", "1494.2", "1508.2…
+$ phys_nf_prim_care_pc_exc_rsdt_21 &lt;dbl&gt; 26, 150, 10, 15, 12, 2, 5, 68, 14, 11…
+$ fips_st_cnty                     &lt;chr&gt; "01001", "01003", "01005", "01007", "…
+$ rural_urban_contnm_13            &lt;chr&gt; "02", "03", "06", "01", "01", "06", "…</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#look at summaries of variables to see if there is any abnormal values</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(merged)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    STUSAB            TL_GEO_ID        AOOCE001           AOOCE012      
+ Length:3221        Min.   : 1001   Min.   :      48   Min.   :      0  
+ Class :character   1st Qu.:19031   1st Qu.:   11032   1st Qu.:    391  
+ Mode  :character   Median :30023   Median :   25916   Median :   1224  
+                    Mean   :31384   Mean   :  103395   Mean   :  19894  
+                    3rd Qu.:46105   3rd Qu.:   67298   3rd Qu.:   6114  
+                    Max.   :72153   Max.   :10019635   Max.   :4878619  
+                                                                        
+    AOOCE004          AOP8E001          AOP8E002         AOP8E003      
+ Min.   :      0   Min.   :     47   Min.   :     0   Min.   :   0.00  
+ 1st Qu.:     87   1st Qu.:   7715   1st Qu.:    62   1st Qu.:   0.00  
+ Median :    698   Median :  18231   Median :   197   Median :   0.00  
+ Mean   :  12481   Mean   :  70646   Mean   :  1166   Mean   :  17.24  
+ 3rd Qu.:   5044   3rd Qu.:  46384   3rd Qu.:   554   3rd Qu.:   7.00  
+ Max.   :1192435   Max.   :6922061   Max.   :277065   Max.   :2448.00  
+                                                                       
+    AOP8E004          AOP8E005           AOP8E006           AOP8E007      
+ Min.   :   0.00   Min.   :    0.00   Min.   :    0.00   Min.   :    0.0  
+ 1st Qu.:   0.00   1st Qu.:    0.00   1st Qu.:    0.00   1st Qu.:    0.0  
+ Median :   0.00   Median :    0.00   Median :    1.00   Median :   12.0  
+ Mean   :  18.03   Mean   :   39.13   Mean   :   77.97   Mean   :  167.6  
+ 3rd Qu.:   6.00   3rd Qu.:   13.00   3rd Qu.:   28.00   3rd Qu.:   67.0  
+ Max.   :3726.00   Max.   :12137.00   Max.   :26772.00   Max.   :56044.0  
+                                                                          
+    AOP8E008          AOP8E009          AOP8E010           AOP8E011      
+ Min.   :    0.0   Min.   :    0.0   Min.   :     0.0   Min.   :    0.0  
+ 1st Qu.:    0.0   1st Qu.:    0.0   1st Qu.:    17.0   1st Qu.:   14.0  
+ Median :   11.0   Median :   20.0   Median :    74.0   Median :   66.0  
+ Mean   :  128.6   Mean   :  190.5   Mean   :   690.9   Mean   :  247.9  
+ 3rd Qu.:   54.0   3rd Qu.:   82.0   3rd Qu.:   263.0   3rd Qu.:  192.0  
+ Max.   :32595.0   Max.   :48138.0   Max.   :237994.0   Max.   :35233.0  
+                                                                         
+    AOP8E012          AOP8E013           AOP8E014        AOP8E015     
+ Min.   :    0.0   Min.   :     0.0   Min.   :    0   Min.   :     0  
+ 1st Qu.:  103.0   1st Qu.:    98.0   1st Qu.:  151   1st Qu.:   170  
+ Median :  262.0   Median :   285.0   Median :  389   Median :   437  
+ Mean   :  712.2   Mean   :   923.9   Mean   : 1041   Mean   :  1200  
+ 3rd Qu.:  595.0   3rd Qu.:   692.0   3rd Qu.:  908   3rd Qu.:   992  
+ Max.   :80997.0   Max.   :159054.0   Max.   :80221   Max.   :116822  
+                                                                      
+    AOP8E016         AOXWE001          AOXWE002         AOXWE003     
+ Min.   :     0   Min.   :     43   Min.   :     0   Min.   :     0  
+ 1st Qu.:   112   1st Qu.:  10655   1st Qu.:   633   1st Qu.:   867  
+ Median :   295   Median :  24969   Median :  1585   Median :  2167  
+ Mean   :  1317   Mean   : 100956   Mean   :  6005   Mean   :  7054  
+ 3rd Qu.:   751   3rd Qu.:  64884   3rd Qu.:  4313   3rd Qu.:  5283  
+ Max.   :212201   Max.   :9861892   Max.   :603807   Max.   :762737  
+                                                                     
+    AOSJE003          AOSJE004          AOSJE005         APEME001      
+ Min.   :     26   Min.   :     26   Min.   :     0   Min.   :     44  
+ 1st Qu.:   4792   1st Qu.:   4475   1st Qu.:   242   1st Qu.:  10690  
+ Median :  11409   Median :  10840   Median :   620   Median :  25271  
+ Mean   :  52129   Mean   :  49229   Mean   :  2900   Mean   : 101864  
+ 3rd Qu.:  31398   3rd Qu.:  29674   3rd Qu.:  1742   3rd Qu.:  65154  
+ Max.   :5252747   Max.   :4885032   Max.   :367715   Max.   :9948747  
+                                                                       
+    APEME005          APEME008          APEME011          APEME014     
+ Min.   :    0.0   Min.   :    0.0   Min.   :    0.0   Min.   :     0  
+ 1st Qu.:    7.0   1st Qu.:   41.0   1st Qu.:   65.0   1st Qu.:    94  
+ Median :   36.0   Median :  119.0   Median :  189.0   Median :   263  
+ Mean   :  161.7   Mean   :  504.8   Mean   :  743.9   Mean   :  1124  
+ 3rd Qu.:  121.0   3rd Qu.:  333.0   3rd Qu.:  501.0   3rd Qu.:   736  
+ Max.   :21529.0   Max.   :69603.0   Max.   :82596.0   Max.   :127084  
+                                                                       
+    APEME017           APEME020          APEME023          APEME026      
+ Min.   :     0.0   Min.   :    0.0   Min.   :    0.0   Min.   :   0.00  
+ 1st Qu.:    84.0   1st Qu.:   73.0   1st Qu.:   65.0   1st Qu.:   0.00  
+ Median :   233.0   Median :  193.0   Median :  164.0   Median :   2.00  
+ Mean   :   976.3   Mean   :  763.1   Mean   :  555.7   Mean   :  45.12  
+ 3rd Qu.:   619.0   3rd Qu.:  489.0   3rd Qu.:  408.0   3rd Qu.:  21.00  
+ Max.   :114273.0   Max.   :96979.0   Max.   :54943.0   Max.   :9141.00  
+                                                                         
+    APEME029          APEME033          APEME036          APEME039      
+ Min.   :   0.00   Min.   :    0.0   Min.   :    0.0   Min.   :    0.0  
+ 1st Qu.:   0.00   1st Qu.:    6.0   1st Qu.:   36.0   1st Qu.:   41.0  
+ Median :   0.00   Median :   35.0   Median :  110.0   Median :  133.0  
+ Mean   :  13.23   Mean   :  156.1   Mean   :  478.1   Mean   :  577.7  
+ 3rd Qu.:   1.00   3rd Qu.:  108.0   3rd Qu.:  322.0   3rd Qu.:  381.0  
+ Max.   :1550.00   Max.   :20416.0   Max.   :67058.0   Max.   :68506.0  
+                                                                        
+    APEME042          APEME045          APEME048          APEME051      
+ Min.   :    0.0   Min.   :    0.0   Min.   :    0.0   Min.   :    0.0  
+ 1st Qu.:   59.0   1st Qu.:   61.0   1st Qu.:   61.0   1st Qu.:   59.0  
+ Median :  173.0   Median :  171.0   Median :  160.0   Median :  154.0  
+ Mean   :  796.5   Mean   :  756.2   Mean   :  654.9   Mean   :  534.8  
+ 3rd Qu.:  490.0   3rd Qu.:  448.0   3rd Qu.:  427.0   3rd Qu.:  392.0  
+ Max.   :94051.0   Max.   :91004.0   Max.   :76031.0   Max.   :51629.0  
+                                                                        
+    APEME054          APEME057         Population          Rate          
+ Min.   :   0.00   Min.   :   0.00   Min.   :     82   Length:3221       
+ 1st Qu.:   0.00   1st Qu.:   0.00   1st Qu.:  11131   Class :character  
+ Median :   0.00   Median :   0.00   Median :  26170   Mode  :character  
+ Mean   :  50.36   Mean   :  21.83   Mean   : 106633                     
+ 3rd Qu.:  19.00   3rd Qu.:   5.00   3rd Qu.:  69251                     
+ Max.   :7791.00   Max.   :3275.00   Max.   :9829544                     
+                                     NA's   :109                         
+ phys_nf_prim_care_pc_exc_rsdt_21 fips_st_cnty       rural_urban_contnm_13
+ Min.   :   0.00                  Length:3221        Length:3221          
+ 1st Qu.:   4.00                  Class :character   Class :character     
+ Median :  11.00                  Mode  :character   Mode  :character     
+ Mean   :  78.13                                                          
+ 3rd Qu.:  39.00                                                          
+ Max.   :7411.00                                                          
+                                                                          </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">#convert "Unreliable" in Rates to missingness, then convert Rates to a numeric variable Rate2</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>merged<span class="sc">$</span>Rate2<span class="ot">&lt;-</span><span class="fu">ifelse</span>(merged<span class="sc">$</span>Rate<span class="sc">==</span><span class="st">"Unreliable"</span>,<span class="cn">NA_character_</span>, merged<span class="sc">$</span>Rate)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>merged<span class="sc">$</span>Rate2<span class="ot">&lt;-</span><span class="fu">as.numeric</span>(merged<span class="sc">$</span>Rate2)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">#create a final dataset for future analysis</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>merged2<span class="ot">&lt;-</span> merged <span class="sc">%&gt;%</span> </span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Rate2) <span class="sc">&amp;</span> STUSAB <span class="sc">!=</span><span class="st">"PR"</span> )  <span class="sc">%&gt;%</span> <span class="co">#remove counties with missing rates or from Puerto Rico</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pcp_100k =</span> phys_nf_prim_care_pc_exc_rsdt_21<span class="sc">*</span><span class="dv">100000</span><span class="sc">/</span>Population) <span class="sc">%&gt;%</span> <span class="co">#create PCP supply (n per 100k people)</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">metro=</span><span class="fu">ifelse</span>(rural_urban_contnm_13 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"01"</span>,<span class="st">"02"</span>,<span class="st">"03"</span>),<span class="dv">1</span>,<span class="dv">0</span>) ) <span class="sc">%&gt;%</span> <span class="co">#create a variable indicating metro status of the county</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">hispanic_pct=</span>AOOCE012<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span>AOOCE001 ) <span class="sc">%&gt;%</span>    <span class="co">#create %Hispanic</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">NHB_pct=</span>AOOCE004<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span>AOOCE001 ) <span class="sc">%&gt;%</span>         <span class="co">#create %non-Hispanic Black</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">noHS_pct=</span>(AOP8E002<span class="sc">+</span>AOP8E003<span class="sc">+</span>AOP8E004<span class="sc">+</span>AOP8E005<span class="sc">+</span>AOP8E006<span class="sc">+</span>AOP8E007<span class="sc">+</span>AOP8E008<span class="sc">+</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>                       AOP8E009<span class="sc">+</span>AOP8E010<span class="sc">+</span>AOP8E011<span class="sc">+</span>AOP8E012<span class="sc">+</span>AOP8E013<span class="sc">+</span>AOP8E014<span class="sc">+</span>AOP8E015<span class="sc">+</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>                       AOP8E016)<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span>AOP8E001 ) <span class="sc">%&gt;%</span>   <span class="co">#create %no high school diploma</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">poverty_pct=</span>(AOXWE002<span class="sc">+</span>AOXWE003)<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span>AOXWE001) <span class="sc">%&gt;%</span>   <span class="co">#create %living under poverty line</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">unemployed_pct=</span>AOSJE005<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span>AOSJE003) <span class="sc">%&gt;%</span>    <span class="co">#create %unemployed</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">uninsured_pct=</span>(APEME005<span class="sc">+</span>APEME008<span class="sc">+</span>APEME011<span class="sc">+</span>APEME014<span class="sc">+</span>APEME017<span class="sc">+</span>APEME020<span class="sc">+</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>                           APEME023<span class="sc">+</span>APEME026<span class="sc">+</span>APEME029<span class="sc">+</span>APEME033<span class="sc">+</span>APEME036<span class="sc">+</span>APEME039<span class="sc">+</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>                           APEME042<span class="sc">+</span>APEME045<span class="sc">+</span>APEME048<span class="sc">+</span>APEME051<span class="sc">+</span>APEME054<span class="sc">+</span>APEME057</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>                           )<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span>APEME001) <span class="sc">%&gt;%</span>        <span class="co">#create %without health insurance</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">metro=</span><span class="fu">as.factor</span>(metro), </span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>         <span class="at">state=</span><span class="fu">as.factor</span>(STUSAB))  <span class="sc">%&gt;%</span>                <span class="co"># convert metro and STUSAB to factors</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(state,TL_GEO_ID, Rate2, pcp_100k, metro, hispanic_pct, NHB_pct, noHS_pct,</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>         poverty_pct, unemployed_pct, uninsured_pct)</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>   </span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="co">#check processed dataset </span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(merged2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     state        TL_GEO_ID         Rate2           pcp_100k      metro   
+ TX     : 244   Min.   : 1001   Min.   : 287.6   Min.   :  0.00   0:1917  
+ GA     : 159   1st Qu.:18178   1st Qu.:1121.6   1st Qu.: 27.29   1:1162  
+ VA     : 133   Median :29151   Median :1379.0   Median : 45.47           
+ KY     : 120   Mean   :30411   Mean   :1375.7   Mean   : 51.46           
+ MO     : 115   3rd Qu.:45080   3rd Qu.:1612.7   3rd Qu.: 69.47           
+ KS     : 103   Max.   :56045   Max.   :3585.0   Max.   :580.53           
+ (Other):2205                                                             
+  hispanic_pct       NHB_pct           noHS_pct       poverty_pct    
+ Min.   : 0.000   Min.   : 0.0000   Min.   : 1.380   Min.   : 1.802  
+ 1st Qu.: 2.423   1st Qu.: 0.6692   1st Qu.: 7.729   1st Qu.:10.201  
+ Median : 4.515   Median : 2.2108   Median :10.816   Median :13.503  
+ Mean   : 9.764   Mean   : 8.9494   Mean   :12.075   Mean   :14.468  
+ 3rd Qu.:10.217   3rd Qu.:10.0394   3rd Qu.:15.307   3rd Qu.:17.639  
+ Max.   :96.329   Max.   :86.9994   Max.   :50.327   Max.   :59.025  
+                                                                     
+ unemployed_pct   uninsured_pct   
+ Min.   : 0.000   Min.   : 1.057  
+ 1st Qu.: 3.673   1st Qu.: 5.878  
+ Median : 4.922   Median : 8.514  
+ Mean   : 5.273   Mean   : 9.622  
+ 3rd Qu.: 6.376   3rd Qu.:12.164  
+ Max.   :32.417   Max.   :44.906  
+                                  </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(merged2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 3,079
+Columns: 11
+$ state          &lt;fct&gt; AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,…
+$ TL_GEO_ID      &lt;dbl&gt; 1001, 1003, 1005, 1007, 1009, 1011, 1013, 1015, 1017, 1…
+$ Rate2          &lt;dbl&gt; 1199.8, 1294.6, 1494.2, 1508.2, 1424.4, 1366.3, 1636.3,…
+$ pcp_100k       &lt;dbl&gt; 43.99695, 62.68440, 40.05768, 66.73488, 20.32486, 19.37…
+$ metro          &lt;fct&gt; 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0…
+$ hispanic_pct   &lt;dbl&gt; 3.0477858, 4.6818796, 4.6557663, 2.8288417, 9.5306025, …
+$ NHB_pct        &lt;dbl&gt; 19.684404, 8.694982, 47.246526, 21.885597, 1.266898, 68…
+$ noHS_pct       &lt;dbl&gt; 10.415510, 8.985844, 24.328980, 19.461917, 16.351923, 2…
+$ poverty_pct    &lt;dbl&gt; 13.578474, 9.204905, 26.471910, 16.942857, 13.236630, 3…
+$ unemployed_pct &lt;dbl&gt; 2.824625, 3.685828, 8.624186, 9.706819, 6.023723, 2.997…
+$ uninsured_pct  &lt;dbl&gt; 7.893951, 9.729026, 10.374523, 9.976190, 10.017626, 10.…</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#save dataset to processed-data folder</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>save_data_location <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"processed-data"</span>,<span class="st">"processeddata.rds"</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(merged2, <span class="at">file =</span> save_data_location)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Data cleaning and processing completed. See eda.qmd for codes of exploratory data analysis.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      return note.innerHTML;
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

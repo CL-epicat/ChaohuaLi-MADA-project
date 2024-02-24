@@ -1,0 +1,106 @@
+---
+title: "Data processing for MADA project"
+author: "Chaohua Li"
+date: "2024-02-21"
+output: html_document
+---
+
+
+# Load packages 
+
+```{r}
+library(haven) #for loading sas dataset
+library(tidyverse) #for data processing/cleaning
+library(Hmisc) #to summarize dataset
+library(here) #to set paths
+```
+
+
+# Load data 
+
+```{r}
+#load county-level age-adjusted all-cause mortality rate data from txt file
+mortality <- read.table(here("data","raw-data","cdc_wonder_mortality.txt"), header = TRUE)
+
+#load primary care physician (PCP) supply data from sas7bdat file
+ahrf<- read_sas("C:/Users/chaoh/Desktop/UGA Courses/4_Spring 2024/EPID 8060E/Project/File too big for push/ahrf2023.sas7bdat")
+
+#load American Community Survey (ACS) data from csv file
+acs <- read.csv(here("data","raw-data","nhgis0107_ds254_20215_county.csv"))
+```
+
+
+# Keep only the variables needed for the project and merge them into a single dataset
+
+```{r}
+#subsetting variables from mortality data
+mortality1 <- mortality[,c("County.Code","Population","Rate")]
+
+#subsetting variables from PCP supply data
+ahrf1<- ahrf[,c("phys_nf_prim_care_pc_exc_rsdt_21","fips_st_cnty","rural_urban_contnm_13")]
+ahrf1$fips<-as.numeric(ahrf1$fips_st_cnty) #create a numeric FIPS code for merging
+
+#subsetting variables from ACS data
+acs1 <- acs[,c("STUSAB","TL_GEO_ID", "AOOCE001","AOOCE012","AOOCE004",
+              "AOP8E001", "AOP8E002","AOP8E003","AOP8E004","AOP8E005","AOP8E006","AOP8E007","AOP8E008",
+              "AOP8E009","AOP8E010","AOP8E011","AOP8E012","AOP8E013","AOP8E014","AOP8E015","AOP8E016",
+              "AOXWE001","AOXWE002","AOXWE003",
+              "AOSJE003","AOSJE004","AOSJE005",
+              "APEME001","APEME005","APEME008","APEME011","APEME014","APEME017","APEME020","APEME023",
+              "APEME026","APEME029","APEME033","APEME036","APEME039","APEME042","APEME045","APEME048"
+              ,"APEME051","APEME054","APEME057")]
+
+#merge into one dataset
+merged <- acs1 %>%
+  left_join(mortality1, by = c("TL_GEO_ID" = "County.Code")) %>%
+  left_join(ahrf1, by = c("TL_GEO_ID" = "fips"))
+```
+
+
+# Process dataset for future analysis  
+
+```{r}
+#preview dataset before processing
+glimpse(merged)
+#look at summaries of variables to see if there is any abnormal values
+summary(merged)
+
+#convert "Unreliable" in Rates to missingness, then convert Rates to a numeric variable Rate2
+merged$Rate2<-ifelse(merged$Rate=="Unreliable",NA_character_, merged$Rate)
+merged$Rate2<-as.numeric(merged$Rate2)
+
+#create a final dataset for future analysis
+merged2<- merged %>% 
+  filter(!is.na(Rate2) & STUSAB !="PR" )  %>% #remove counties with missing rates or from Puerto Rico
+  mutate(pcp_100k = phys_nf_prim_care_pc_exc_rsdt_21*100000/Population) %>% #create PCP supply (n per 100k people)
+  mutate(metro=ifelse(rural_urban_contnm_13 %in% c("01","02","03"),1,0) ) %>% #create a variable indicating metro status of the county
+  mutate(hispanic_pct=AOOCE012*100/AOOCE001 ) %>%    #create %Hispanic
+  mutate(NHB_pct=AOOCE004*100/AOOCE001 ) %>%         #create %non-Hispanic Black
+  mutate(noHS_pct=(AOP8E002+AOP8E003+AOP8E004+AOP8E005+AOP8E006+AOP8E007+AOP8E008+
+                       AOP8E009+AOP8E010+AOP8E011+AOP8E012+AOP8E013+AOP8E014+AOP8E015+
+                       AOP8E016)*100/AOP8E001 ) %>%   #create %no high school diploma
+  mutate(poverty_pct=(AOXWE002+AOXWE003)*100/AOXWE001) %>%   #create %living under poverty line
+  mutate(unemployed_pct=AOSJE005*100/AOSJE003) %>%    #create %unemployed
+  mutate(uninsured_pct=(APEME005+APEME008+APEME011+APEME014+APEME017+APEME020+
+                           APEME023+APEME026+APEME029+APEME033+APEME036+APEME039+
+                           APEME042+APEME045+APEME048+APEME051+APEME054+APEME057
+                           )*100/APEME001) %>%        #create %without health insurance
+  mutate(metro=as.factor(metro), 
+         state=as.factor(STUSAB))  %>%                # convert metro and STUSAB to factors
+  select(state,TL_GEO_ID, Rate2, pcp_100k, metro, hispanic_pct, NHB_pct, noHS_pct,
+         poverty_pct, unemployed_pct, uninsured_pct)
+   
+#check processed dataset 
+summary(merged2)
+glimpse(merged2)
+
+#save dataset to processed-data folder
+save_data_location <- here("data","processed-data","processeddata.rds")
+saveRDS(merged2, file = save_data_location)
+
+```
+
+
+Data cleaning and processing completed. See eda.qmd for codes of exploratory data
+analysis. 
+
