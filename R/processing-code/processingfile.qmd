@@ -24,7 +24,7 @@ mortality <- read.table(here("data","raw-data","cdc_wonder_mortality.txt"), head
 
 #load primary care physician (PCP) supply data from sas7bdat file
 #original file was too big to be pushed, had to save it outside of the project folder
-ahrf<- read_sas("C:/Users/chaoh/Desktop/UGA Courses/4_Spring 2024/EPID 8060E/Project/File too big for push/ahrf2023.sas7bdat")
+ahrf<- read_sas(here("data","raw-data","ahrf2023.sas7bdat"))
 
 #load American Community Survey (ACS) data from csv file
 acs <- read.csv(here("data","raw-data","nhgis0107_ds254_20215_county.csv"))
