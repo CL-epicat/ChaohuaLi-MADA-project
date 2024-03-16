@@ -117,10 +117,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) <span class="co">#for data processing/cleaning</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-✔ dplyr     1.1.4     ✔ readr     2.1.4
+✔ dplyr     1.1.4     ✔ readr     2.1.5
 ✔ forcats   1.0.0     ✔ stringr   1.5.1
-✔ ggplot2   3.4.4     ✔ tibble    3.2.1
-✔ lubridate 1.9.3     ✔ tidyr     1.3.0
+✔ ggplot2   3.5.0     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
 ✔ purrr     1.0.2     
 ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ✖ dplyr::filter() masks stats::filter()
@@ -423,9 +423,27 @@ $ poverty_pct    &lt;dbl&gt; 13.578474, 9.204905, 26.471910, 16.942857, 13.23663
 $ unemployed_pct &lt;dbl&gt; 2.824625, 3.685828, 8.624186, 9.706819, 6.023723, 2.997…
 $ uninsured_pct  &lt;dbl&gt; 7.893951, 9.729026, 10.374523, 9.976190, 10.017626, 10.…</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#save dataset to processed-data folder</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>save_data_location <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"processed-data"</span>,<span class="st">"processeddata.rds"</span>)</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(merged2, <span class="at">file =</span> save_data_location)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Add formats and labels for the variables </span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>merged2<span class="sc">$</span>metro<span class="ot">&lt;-</span><span class="fu">factor</span>(merged2<span class="sc">$</span>metro, <span class="at">levels=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>),</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">labels=</span><span class="fu">c</span>(<span class="st">"Metro"</span>, </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"Non-metro"</span>))</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">label</span>(merged2<span class="sc">$</span>Rate2)       <span class="ot">&lt;-</span> <span class="st">"Mortality rate"</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="fu">label</span>(merged2<span class="sc">$</span>metro)       <span class="ot">&lt;-</span> <span class="st">"Metropolitan status"</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="fu">label</span>(merged2<span class="sc">$</span>pcp_100k)       <span class="ot">&lt;-</span> <span class="st">"PCP supply"</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="fu">label</span>(merged2<span class="sc">$</span>hispanic_pct)       <span class="ot">&lt;-</span> <span class="st">"% Hispanic"</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="fu">label</span>(merged2<span class="sc">$</span>NHB_pct)       <span class="ot">&lt;-</span> <span class="st">"% NH-Black"</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="fu">label</span>(merged2<span class="sc">$</span>noHS_pct)       <span class="ot">&lt;-</span> <span class="st">"% No high school diploma"</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="fu">label</span>(merged2<span class="sc">$</span>poverty_pct)       <span class="ot">&lt;-</span> <span class="st">"% Poverty"</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="fu">label</span>(merged2<span class="sc">$</span>unemployed_pct)       <span class="ot">&lt;-</span> <span class="st">"% Unemployed"</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="fu">label</span>(merged2<span class="sc">$</span>uninsured_pct)       <span class="ot">&lt;-</span> <span class="st">"% No health insurance"</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="fu">units</span>(merged2<span class="sc">$</span>Rate2) <span class="ot">&lt;-</span> <span class="st">"n/100k"</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="fu">units</span>(merged2<span class="sc">$</span>pcp_100k) <span class="ot">&lt;-</span> <span class="st">"n/100k"</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="co">#save dataset to processed-data folder</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>save_data_location <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"processed-data"</span>,<span class="st">"processeddata.rds"</span>)</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(merged2, <span class="at">file =</span> save_data_location)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Data cleaning and processing completed. See eda.qmd for codes of exploratory data analysis.</p>
 </section>

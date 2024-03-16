@@ -1,0 +1,91 @@
+---
+title: "Supplement to Manuscript: All-cause Mortality Rates and Primary Care Physician Supply in US Counties 2021"
+subtitle: ""
+author: Chaohua Li
+date: "`r Sys.Date()`"
+format:
+  docx:
+    toc: false
+    number-sections: true
+    highlight-style: github
+bibliography: ../../assets/mada.bib
+csl: ../../assets/apa.csl
+---
+
+```{r, echo=FALSE, message=FALSE}
+# load a few R packages
+library(here)
+library(knitr)
+```
+
+
+# Exploratory analysis
+'Rate2': age-adjusted all-cause mortality rate
+
+'pcp_100k': primary care physician supply per 100,000 population
+
+'metro': metropolitan status of the county
+
+'hispanic_pct': proportion of county population that are Hispanic
+
+'NHB_pct': proportion of county population that are Non-Hispanic  Black
+
+'noHS_pct': proportion of county population without a high school diploma
+
+'poverty_pct': proportion of county population living under federal poverty line
+
+'unemployed_pct': proportion of county population that are unemployed
+
+'uninsured_pct': proportion of county population without health insurance
+
+
+```{r}
+#| label: tbl-schematic1
+#| tbl-cap: "Data summary table."
+#| echo: FALSE
+resulttable=readRDS(here("results","exploratory","summarytable.rds"))
+knitr::kable(resulttable)
+```
+
+```{r}
+#| label: fig-schematic1
+#| fig-cap: "Distributions in the nurmeric variables."
+#| echo: FALSE
+knitr::include_graphics(here("results","exploratory","combined_histogram.png"))
+```
+
+From the histograms, we can tell the distribution for the outcome (mortality rate) is fairly normal. Distributions for PCP supply, %Hispanic and %NH-Black are very skewed. We probably have to log-transform PCP supply.
+
+```{r}
+#| label: fig-schematic2
+#| fig-cap: "Scatterplot of Mortality Rate and Log(PCP Supply)."
+#| echo: FALSE 
+knitr::include_graphics(here("results","exploratory","rate_pcp1.png"))
+```
+
+There seems to be a linear relationship between Mortality Rate and log(PCP supply). Linear regression might be suitable for analysis.
+
+```{r}
+#| label: fig-schematic3
+#| fig-cap: "Scatterplot of Mortality Rate and Log(PCP Supply) by Metro Status."
+#| echo: FALSE 
+knitr::include_graphics(here("results","exploratory","rate_pcp2.png"))
+```
+
+The relationship looks similar for the metro and non-metro counties. Maybe there is no interaction by metro status.
+
+{{< pagebreak >}}
+```{r}
+#| label: tbl-schematic2
+#| tbl-cap: "Correlations among covariates."
+#| echo: FALSE
+corrtable=readRDS(here("results","exploratory","correlation_table.rds"))
+knitr::kable(corrtable)
+```
+
+The correlations among the covariates are relatively low. We can keep all the covariates for modeling.
+
+{{< pagebreak >}}
+# Full Analysis
+
+

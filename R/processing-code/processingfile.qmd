@@ -95,6 +95,24 @@ merged2<- merged %>%
 summary(merged2)
 glimpse(merged2)
 
+#Add formats and labels for the variables 
+merged2$metro<-factor(merged2$metro, levels=c(1,0),
+         labels=c("Metro", 
+                  "Non-metro"))
+label(merged2$Rate2)       <- "Mortality rate"
+label(merged2$metro)       <- "Metropolitan status"
+label(merged2$pcp_100k)       <- "PCP supply"
+label(merged2$hispanic_pct)       <- "% Hispanic"
+label(merged2$NHB_pct)       <- "% NH-Black"
+label(merged2$noHS_pct)       <- "% No high school diploma"
+label(merged2$poverty_pct)       <- "% Poverty"
+label(merged2$unemployed_pct)       <- "% Unemployed"
+label(merged2$uninsured_pct)       <- "% No health insurance"
+
+units(merged2$Rate2) <- "n/100k"
+units(merged2$pcp_100k) <- "n/100k"
+
+
 #save dataset to processed-data folder
 save_data_location <- here("data","processed-data","processeddata.rds")
 saveRDS(merged2, file = save_data_location)

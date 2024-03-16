@@ -166,47 +166,47 @@ Attaching package: 'dplyr'</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Rate2</td>
+<td style="text-align: left;">Mortality rate</td>
 <td style="text-align: left;">1,376/368</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Phys,Primary Care, Patient Care Non-Fed 2021</td>
+<td style="text-align: left;">PCP supply</td>
 <td style="text-align: left;">51/37</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">metro</td>
+<td style="text-align: left;">Metropolitan status</td>
 <td style="text-align: left;">NA</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">0</td>
-<td style="text-align: left;">1,917 / 3,079 (62%)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">1</td>
+<td style="text-align: left;">Metro</td>
 <td style="text-align: left;">1,162 / 3,079 (38%)</td>
 </tr>
+<tr class="odd">
+<td style="text-align: left;">Non-metro</td>
+<td style="text-align: left;">1,917 / 3,079 (62%)</td>
+</tr>
 <tr class="even">
-<td style="text-align: left;">hispanic_pct</td>
+<td style="text-align: left;">% Hispanic</td>
 <td style="text-align: left;">10/14</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">NHB_pct</td>
+<td style="text-align: left;">% NH-Black</td>
 <td style="text-align: left;">9/14</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">noHS_pct</td>
+<td style="text-align: left;">% No high school diploma</td>
 <td style="text-align: left;">12.1/5.8</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">poverty_pct</td>
+<td style="text-align: left;">% Poverty</td>
 <td style="text-align: left;">14.5/6.1</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">unemployed_pct</td>
+<td style="text-align: left;">% Unemployed</td>
 <td style="text-align: left;">5.27/2.59</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">uninsured_pct</td>
+<td style="text-align: left;">% No health insurance</td>
 <td style="text-align: left;">9.6/5.0</td>
 </tr>
 </tbody>
@@ -324,7 +324,8 @@ Attaching package: 'dplyr'</code></pre>
 <pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 181 rows containing non-finite values (`stat_smooth()`).</code></pre>
+<pre><code>Warning: Removed 181 rows containing non-finite outside the scale range
+(`stat_smooth()`).</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
@@ -340,7 +341,8 @@ Attaching package: 'dplyr'</code></pre>
 `geom_smooth()` using formula = 'y ~ x'</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 181 rows containing non-finite values (`stat_smooth()`).</code></pre>
+<pre><code>Warning: Removed 181 rows containing non-finite outside the scale range
+(`stat_smooth()`).</code></pre>
 </div>
 </div>
 <p>It seems there is a linear relationship between Mortality Rate and log(PCP supply). Then I would like to inspect the relationship by Metro status of the county.</p>
@@ -348,10 +350,17 @@ Attaching package: 'dplyr'</code></pre>
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>Rate_PCP2 <span class="ot">&lt;-</span> project <span class="sc">%&gt;%</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">log</span>(pcp_100k), <span class="at">y=</span>Rate2)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method=</span><span class="st">'lm'</span>)<span class="sc">+</span><span class="fu">facet_wrap</span>(<span class="sc">~</span> metro, <span class="at">scales =</span> <span class="st">"free_y"</span>) </span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(Rate_PCP2 )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
+<pre><code>Warning: Combining variables of class &lt;labelled&gt; and &lt;factor&gt; was deprecated in ggplot2
+3.4.0.
+ℹ Please ensure your variables are compatible before plotting (location:
+  `join_keys()`)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
 <pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 181 rows containing non-finite values (`stat_smooth()`).</code></pre>
+<pre><code>Warning: Removed 181 rows containing non-finite outside the scale range
+(`stat_smooth()`).</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
@@ -360,14 +369,15 @@ Attaching package: 'dplyr'</code></pre>
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>figure_file2 <span class="ot">=</span> <span class="fu">here</span>(<span class="st">"results"</span>,<span class="st">"exploratory"</span>,<span class="st">"rate_pcp2.png"</span>)</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> figure_file2, <span class="at">plot=</span>Rate_PCP2) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>figure_file2 <span class="ot">=</span> <span class="fu">here</span>(<span class="st">"results"</span>,<span class="st">"exploratory"</span>,<span class="st">"rate_pcp2.png"</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> figure_file2, <span class="at">plot=</span>Rate_PCP2) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Saving 7 x 5 in image
 `geom_smooth()` using formula = 'y ~ x'</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 181 rows containing non-finite values (`stat_smooth()`).</code></pre>
+<pre><code>Warning: Removed 181 rows containing non-finite outside the scale range
+(`stat_smooth()`).</code></pre>
 </div>
 </div>
 <p>The relationship looks similar for the metro and non-metro counties. Maybe there is no interaction by metro status.</p>
@@ -375,9 +385,9 @@ Attaching package: 'dplyr'</code></pre>
 <section id="inspect-correlation-among-covariates" class="level1">
 <h1>Inspect correlation among covariates</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">#create correlation matrix for the 6 covariates</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>cor<span class="ot">&lt;-</span><span class="fu">cor</span>(project[,<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>,<span class="sc">-</span><span class="dv">2</span>,<span class="sc">-</span><span class="dv">3</span>,<span class="sc">-</span><span class="dv">4</span>,<span class="sc">-</span><span class="dv">5</span>)])</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(cor,<span class="at">caption =</span> <span class="st">"Correlation among covariates"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co">#create correlation matrix for the 6 covariates</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>cor<span class="ot">&lt;-</span><span class="fu">cor</span>(project[,<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>,<span class="sc">-</span><span class="dv">2</span>,<span class="sc">-</span><span class="dv">3</span>,<span class="sc">-</span><span class="dv">4</span>,<span class="sc">-</span><span class="dv">5</span>)])</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(cor,<span class="at">caption =</span> <span class="st">"Correlation among covariates"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <caption>Correlation among covariates</caption>
@@ -459,9 +469,9 @@ Attaching package: 'dplyr'</code></pre>
 </tbody>
 </table>
 </div>
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save table in results folder</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>cor_path <span class="ot">=</span> <span class="fu">here</span>(<span class="st">"results"</span>,<span class="st">"exploratory"</span>, <span class="st">"correlation_table.rds"</span>)</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(cor, <span class="at">file =</span> cor_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save table in results folder</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>cor_path <span class="ot">=</span> <span class="fu">here</span>(<span class="st">"results"</span>,<span class="st">"exploratory"</span>, <span class="st">"correlation_table.rds"</span>)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(cor, <span class="at">file =</span> cor_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The correlations among the covariates are relatively low. We can keep all the covariates for modeling.</p>
 </section>

@@ -2,7 +2,7 @@
 title: "All-cause Mortality Rates and Primary Care Physician Supply in US Counties 2021"
 subtitle: ""
 author: Chaohua Li
-date: "02/23/2024"
+date: "`r Sys.Date()`"
 format:
   docx:
     toc: false
@@ -16,6 +16,7 @@ csl: ../../assets/apa.csl
 # load a few R packages
 library(here)
 library(knitr)
+library(kableExtra)
 ```
 
 # Summary/Abstract
@@ -42,52 +43,74 @@ Three data sources were used for this study. (1) Multiple Cause of Death File of
 
 # Results
 
-## Exploratory analysis
+## Descriptive Statistics
 
 ```{r}
 #| label: tbl-schematic1
-#| tbl-cap: "Data summary table."
+#| tbl-cap: "Descriptive statistics of US counties in 2021."
 #| echo: FALSE
-resulttable=readRDS(here("results","exploratory","summarytable.rds"))
-knitr::kable(resulttable)
+resulttable1=readRDS(here("results","analysis","table1.rds"))
+
+resulttable1 %>%
+  kable() %>%
+  add_footnote("SD, standard deviation; PCP, primary care physician.")
 ```
+
 
 ```{r}
 #| label: fig-schematic1
-#| fig-cap: "Distributions in the nurmeric variables."
+#| fig-cap: "Association between age-adjusted all-cause mortality rate and Log (PCP supply) by metropolitan status among US counties, 2011"
 #| echo: FALSE
-knitr::include_graphics(here("results","exploratory","combined_histogram.png"))
+include_graphics(here("results","analysis","figure1.png"))
 ```
 
-From the histograms, we can tell the distribution for the outcome (mortality rate) is fairly normal. Distributions for PCP supply, %Hispanic and %NH-Black are very skewed. We probably have to log-transform PCP supply.
+
 
 ```{r}
-#| label: fig-schematic2
-#| fig-cap: "Scatterplot of Mortality Rate and Log(PCP Supply)."
-#| echo: FALSE 
-knitr::include_graphics(here("results","exploratory","rate_pcp1.png"))
-```
-
-There seems to be a linear relationship between Mortality Rate and log(PCP supply). Linear regression might be suitable for analysis.
-
-```{r}
-#| label: fig-schematic3
-#| fig-cap: "Scatterplot of Mortality Rate and Log(PCP Supply) by Metro Status."
-#| echo: FALSE 
-knitr::include_graphics(here("results","exploratory","rate_pcp2.png"))
-```
-
-The relationship looks similar for the metro and non-metro counties. Maybe there is no interaction by metro status.
-
-```{r}
-#| label: tbl-schematic2
-#| tbl-cap: "Correlations among covariates."
+#| label: tbl-schematic2a
+#| tbl-cap: "Results of unadjusted multilevel linear regression."
 #| echo: FALSE
-corrtable=readRDS(here("results","exploratory","correlation_table.rds"))
-knitr::kable(corrtable)
+resulttable2a=readRDS(here("results","analysis","table2a.rds"))
+
+resulttable2a %>%
+  kable() %>%
+  add_footnote("p, p-values; CI, 95% confidence interval.")
 ```
 
-The correlations among the covariates are relatively low. We can keep all the covariates for modeling.
+```{r}
+#| label: tbl-schematic2b
+#| tbl-cap: "Results of unadjusted multilevel linear regression."
+#| echo: FALSE
+resulttable2b=readRDS(here("results","analysis","table2b.rds"))
+
+resulttable2b %>%
+  kable() %>%
+  add_footnote("p, p-values; CI, 95% confidence interval.")
+```
+
+```{r}
+#| label: tbl-schematic2c
+#| tbl-cap: "Results of unadjusted multilevel linear regression."
+#| echo: FALSE
+resulttable2c=readRDS(here("results","analysis","table2c.rds"))
+
+resulttable2c %>%
+  kable() %>%
+  add_footnote("p, p-values; CI, 95% confidence interval.")
+```
+
+```{r}
+#| label: tbl-schematic2d
+#| tbl-cap: "Results of unadjusted multilevel linear regression."
+#| echo: FALSE
+resulttable2d=readRDS(here("results","analysis","table2d.rds"))
+
+resulttable2d %>%
+  kable() %>%
+  add_footnote("p, p-values; CI, 95% confidence interval.")
+```
+
+
 
 ## Basic statistical analysis
 

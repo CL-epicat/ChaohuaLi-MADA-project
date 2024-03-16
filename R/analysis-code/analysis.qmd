@@ -1,0 +1,137 @@
+---
+title: "Formal analysis script for the MADA project"
+author: "Chaohua Li"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+The codes in the file are for the formal analysis. All results will be included in the
+final manuscript. 
+
+# Load packages
+
+```{r}
+library(here)  
+library(dplyr)
+library(skimr)
+library(ggplot2)
+library(gtsummary)
+library(knitr)
+library(table1)
+library(lme4)
+library(jtools) 
+``` 
+  
+  
+# Load the clean data.
+
+```{r}
+data_location <- here("data","processed-data","processeddata.rds")
+project <- readRDS(data_location)
+``` 
+  
+
+# Create Table 1 (descriptive statistics)
+```{r}
+#create a publication-ready table 1
+descriptive_table<-table1(~ . | metro , data=project[, !(names(project) %in% c("state", "TL_GEO_ID"))],topclass="Rtable1-zebra")
+
+#save table in results folder
+table1path = here("results","analysis", "table1.rds")
+saveRDS(descriptive_table, file = table1path)
+```
+  
+  
+# Create Figure 1 (scatterplot of mortality rate and log(PCP supply))
+```{r}
+#scatterplot by metro status
+figure1 <- project %>%
+  ggplot(aes(x = log(pcp_100k), y = Rate2)) +
+  geom_point() +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~ metro, scales = "free_y") +
+  xlab("Log(PCP per 100k)") + 
+  ylab("Mortality rate, n/100k")  
+
+# Plot the ggplot object
+plot(figure1)
+#save figure in result folder
+figure1path = here("results","analysis","figure1.png")
+ggsave(filename = figure1path, plot=figure1) 
+
+```
+  
+  
+  
+# Calculate Intra-class correlation(ICC) from the unconditional means model to decide whether a multi-level linear model with random intercepts for states is necessary. 
+```{r}
+#fit an unconditional means model with random intercepts for states
+fit0<-lmer(Rate2 ~ 1 + (1 | state), data=project)
+#calculate ICC
+VarCorr(fit0)
+RandomEffects <- as.data.frame(VarCorr(fit0))
+ICC_between <- RandomEffects[1,4]/(RandomEffects[1,4]+RandomEffects[2,4]) 
+ICC_between
+``` 
+
+ICC=0.232. This indicates 23.2% of total variance in county-level mortality rates 
+is attributable to between state variation, and the rest of the 76.8% is attributable 
+to the within-state variation. A multilevel linear model with random intercepts 
+for states is preferred to analysis the association between mortality rates and PCP supply. 
+  
+
+# Fit bivariate multilevel models with mortality rate as the outcome
+Since distribution of PCP supply is highly skewed, we need to log transform it. 
+PCP supply will be in the form of log(pcp_100k+0.01). Adding 0.01 to the PCP supply 
+value for each county is because some counties have 0 PCP supply and cannot be log transformed.
+```{r}
+#fit bivariate multilevel models with each predictor
+fit1<-lme4::lmer(Rate2 ~ log(pcp_100k+0.01) + (1 | state), data=project)
+fit2<-lme4::lmer(Rate2 ~ metro + (1 | state), data=project)
+fit3<-lme4::lmer(Rate2 ~ hispanic_pct + (1 | state), data=project)
+fit4<-lme4::lmer(Rate2 ~ NHB_pct + (1 | state), data=project)
+fit5<-lme4::lmer(Rate2 ~ noHS_pct + (1 | state), data=project)
+fit6<-lme4::lmer(Rate2 ~ poverty_pct + (1 | state), data=project)
+fit7<-lme4::lmer(Rate2 ~ unemployed_pct + (1 | state), data=project)
+fit8<-lme4::lmer(Rate2 ~ uninsured_pct + (1 | state), data=project)
+
+#summary of results
+summ(fit1)
+summ(fit2)
+summ(fit3)
+summ(fit4)
+summ(fit5)
+summ(fit6)
+summ(fit7)
+summ(fit8)
+
+
+library(sjPlot) # table functions
+#combine results from every two models into a single table
+table2a<-tab_model(fit1, fit2,show.icc = FALSE,show.re.var = FALSE,show.aic = TRUE,digits = 1,digits.p = 3)
+table2aa <- sjtable2df::mtab2df(mtab = table2a, n_models =2) #convert html table to a dataframe
+
+table2b<-tab_model(fit3, fit4,show.icc = FALSE,show.re.var = FALSE,show.aic = TRUE,digits = 1,digits.p = 3)
+table2bb <- sjtable2df::mtab2df(mtab = table2b, n_models =2) #convert html table to a dataframe
+
+table2c<-tab_model(fit5, fit6,show.icc = FALSE,show.re.var = FALSE,show.aic = TRUE,digits = 1,digits.p = 3)
+table2cc <- sjtable2df::mtab2df(mtab = table2c, n_models =2) #convert html table to a dataframe
+
+table2d<-tab_model(fit7, fit8,show.icc = FALSE,show.re.var = FALSE,show.aic = TRUE,digits = 1,digits.p = 3)
+table2dd <- sjtable2df::mtab2df(mtab = table2d, n_models =2) #convert html table to a dataframe
+
+#save the 4 tables in results folder
+table2apath = here("results","analysis", "table2a.rds")
+saveRDS(table2aa, file = table2apath)
+
+table2bpath = here("results","analysis", "table2b.rds")
+saveRDS(table2bb, file = table2bpath)
+
+table2cpath = here("results","analysis", "table2c.rds")
+saveRDS(table2cc, file = table2cpath)
+
+table2dpath = here("results","analysis", "table2d.rds")
+saveRDS(table2dd, file = table2dpath)
+
+```
+  
