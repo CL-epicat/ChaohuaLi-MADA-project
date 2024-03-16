@@ -86,6 +86,6 @@ knitr::kable(corrtable)
 The correlations among the covariates are relatively low. We can keep all the covariates for modeling.
 
 {{< pagebreak >}}
-# Full Analysis
+
 
 

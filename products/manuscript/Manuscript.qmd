@@ -44,6 +44,12 @@ Three data sources were used for this study. (1) Multiple Cause of Death File of
 # Results
 
 ## Descriptive Statistics
+We included 3079 US counties in this study, 1162 of which were defined as metropolitan counties (Table 1). The mean age-adjusted all-cause mortality rates were 1380/100k for all counties, 1190/100k for metropolitan counties, and 1490/100k for the non-metro counties. Metro and non-metro counties had similar mean percentages of Hispanic population and unemployment rate. On average, metro counties had higher PCP supply(60.1/100k vs 46.2/100k) and percentages of NH-Black population (10.8% vs 7.8%). Average percentages of population without high school diploma (10.5% vs 13.0%), living under federal poverty line (12.6% vs 15.6%), and without health insurance (8.5% vs 10.3%) were lower among metro counties compared to non-metro counties. 
+
+According to the scatter plot between mortality rate and log-transformed PCP supply, there was a linear association between the two, and the association did not considerably differ by metro status of the county (Figure 1).
+
+Without adjustment of other factors, log-transformed PCP supply was negatively associated with mortality rate (beta=-37.3, 95% CI=-43.0- -31.5, p-value<.001), non-metro counties had significantly higher mortality rates (beta=310.5, 95% CI=287.2-333.8, p-value<.001) (Table 2); %Hispanic was negatively association with mortality rates (beta=-9.8, 95% CI=-11.0 - -8.7, p-value<.001), %NH-Black was not significantly associated with mortality rate (beta=0.3, 95% CI=-0.9-1.5, p-value=0.657) (Table 3); both %No high school diploma (beta=16.7, 95% CI=14.2 -19.1, p-value<.001) and  %Poverty (beta=23.5, 95% CI=21.4–25.6, p-value<.001) were positively associated with mortality rates (Table 4). 
+
 
 ```{r}
 #| label: tbl-schematic1
@@ -56,7 +62,7 @@ resulttable1 %>%
   add_footnote("SD, standard deviation; PCP, primary care physician.")
 ```
 
-
+{{< pagebreak >}}
 ```{r}
 #| label: fig-schematic1
 #| fig-cap: "Association between age-adjusted all-cause mortality rate and Log (PCP supply) by metropolitan status among US counties, 2011"
@@ -65,7 +71,7 @@ include_graphics(here("results","analysis","figure1.png"))
 ```
 
 
-
+{{< pagebreak >}}
 ```{r}
 #| label: tbl-schematic2a
 #| tbl-cap: "Results of unadjusted multilevel linear regression."
