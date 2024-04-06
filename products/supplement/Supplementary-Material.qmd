@@ -86,6 +86,27 @@ knitr::kable(corrtable)
 The correlations among the covariates are relatively low. We can keep all the covariates for modeling.
 
 {{< pagebreak >}}
+# Model Performance
+
+  Model 1: Mortality rate as outcome, log_PCP as the only predictor - RMSE=358
+  
+  Model 2: Mortality rate as outcome, log_PCP and all covariates    - RMSE=292
+
+```{r}
+#| label: fig-schematic4
+#| fig-cap: "Predicted vs Observed Values by Models with and without Covariates."
+#| echo: FALSE 
+knitr::include_graphics(here("results","analysis","predict_observed.png"))
+```
 
 
+```{r}
+#| label: fig-schematic5
+#| fig-cap: "Residuals vs Predicted Values by Models with and without Covariates."
+#| echo: FALSE 
+knitr::include_graphics(here("results","analysis","residual_plot.png"))
+```
 
+The full model with covariates has smaller RMSE, and predicted values closer to the 
+observed values. Thus, Model 2 with all covariates is selected as the final model to 
+describe the relationship between mortality rates and PCP supply. 

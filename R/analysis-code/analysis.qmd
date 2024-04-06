@@ -20,6 +20,9 @@ library(knitr)
 library(table1)
 library(lme4)
 library(jtools) 
+library(rsample)
+library(tidymodels)
+library(multilevelmod)
 ``` 
   
   
@@ -135,3 +138,230 @@ saveRDS(table2dd, file = table2dpath)
 
 ```
   
+  
+# Create a dataframe for fitting the multivariate model
+```{r}
+#add log-transformed PCP, and drop county id and original pcp variable
+final_data<-project %>%
+  mutate(log_PCP=log(pcp_100k+0.01)) %>%
+  select(-TL_GEO_ID, -pcp_100k)
+
+#save dataset to processed-data folder
+save_data_location <- here("data","processed-data","final_data.rds")
+saveRDS(final_data, file = save_data_location)
+``` 
+  
+  
+# Split the data randomly into a 80% train set and a 20% test set.
+  The train set will be used for fitting the model. The test set will be used for 
+  final evaluation of the model performance. 
+```{r}
+#save a seed value
+rngseed = 1234
+
+#set the seed
+set.seed(rngseed)
+
+#splits the dataset randomly into a 80% train set and a 20% test set
+data_split <- initial_split(final_data, prop = 4/5)
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+``` 
+  
+  
+# Fit models with and without covariates and evaluate performance using 10-fold cross-validation. 
+  Model 1: log_PCP as the only predictor;
+  
+  Model 2: log_PCP and all covariates.
+
+## create 10-foler cross-validation sets
+```{r}
+#reset the seed
+set.seed(rngseed)
+
+#10 folder Cross-validation
+folds <- vfold_cv(train_data, v = 10)
+``` 
+
+
+## Fit Model 1: log_PCP as the only predictor
+```{r}
+#specify linear mixed effect model
+lmer_spec <- 
+  linear_reg() %>% 
+  set_engine("lmer")
+
+#create workflow for Model 1 with log_PCP as the only predictor
+flow_1 <- 
+  workflow() %>% 
+  add_variables(outcomes = Rate2, predictors = c(log_PCP ,state)) %>% 
+  add_model(lmer_spec, formula = Rate2 ~ log_PCP + (1|state))
+
+#Fit Model 1
+set.seed(rngseed)
+fit_cv_1 <- 
+  flow_1 %>% 
+  fit_resamples(folds)
+
+#get RMSE of the model
+collect_metrics(fit_cv_1)
+``` 
+
+
+## Fit Model 2: log_PCP and all covariates.
+```{r}
+#create workflow for Model 3 with log_PCP and all covariates
+flow_2 <- 
+  workflow() %>% 
+  add_variables(outcomes = Rate2, predictors = c(log_PCP,metro,hispanic_pct,NHB_pct,
+                                                 noHS_pct, poverty_pct, unemployed_pct,
+                                                 uninsured_pct, state)) %>% 
+  add_model(lmer_spec, formula = Rate2 ~ log_PCP+metro+hispanic_pct+NHB_pct+
+                                                 noHS_pct+ poverty_pct+ unemployed_pct+
+                                                 uninsured_pct + (1|state))
+
+#Fit Model 2
+set.seed(rngseed)
+fit_cv_2 <- 
+  flow_2 %>% 
+  fit_resamples(folds)
+
+#get RMSE of the model
+collect_metrics(fit_cv_2)
+``` 
+
+  Model 1: log_PCP as the only predictor - RMSE=358
+  
+  Model 2: log_PCP and all covariates    - RMSE=292
+
+Model 2 with covariates has much better performance. 
+
+
+## Fit Model 1 and Model 2 with the train set, and create predicted vs observed values plot
+
+Fit Model 1 and Model 2 with train set.
+```{r}
+#Fit Model 1 with train set
+fit_train_1<-lme4::lmer(Rate2 ~ log_PCP + (1|state), data=train_data)
+
+#Fit Model 2 with train set
+fit_train_2<-lme4::lmer(Rate2 ~ log_PCP+metro+hispanic_pct+NHB_pct+
+                                noHS_pct+ poverty_pct+ unemployed_pct+
+                                uninsured_pct + (1|state), data=train_data)
+``` 
+  
+  
+Generate predictions for the models.
+```{r}
+# Prediction for Model 1 (log_PCP as predictor)
+pred1 <- predict(fit_train_1, newdata=train_data) 
+pred1<-data.frame(Observed=train_data$Rate2,Predicted=pred1,Model="Model 1: Log(PCP) only")
+
+
+# Prediction for Model 2 (log_PCP and all covariates)
+pred2 <- predict(fit_train_2, newdata=train_data) 
+pred2<-data.frame(Observed=train_data$Rate2,Predicted=pred2,Model="Model 2: All predictors")
+
+# Concatenate the predictions into one dataframe
+combined_predictions <- bind_rows(pred1, pred2)
+``` 
+  
+  
+Plot Predicted vs Observed values for both models
+```{r}
+#Plot predicted vs observed values by models
+predict_plot<-ggplot(combined_predictions, aes(x = Observed, y = Predicted, color = Model)) +
+  geom_point() +  
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey") +  
+  labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values by Models", color = "Model") +
+  theme_minimal() + # Use a minimal theme for aesthetics
+  scale_shape_manual(values = c( 17, 18)) + # Set different shapes for each level of the label variable
+  scale_color_manual(values = c( "green", "blue"))
+plot(predict_plot)
+
+#save plot 
+predict_path = here("results","analysis","predict_observed.png")
+ggsave(filename = predict_path, plot=predict_plot) 
+```  
+
+Plot residuals vs predicted values by models
+```{r}
+#calculate residuals
+combined_predictions <- combined_predictions %>%
+  mutate(residuals = Predicted - Observed)
+
+#Plot residuals vs predicted values by models
+residual_plot<-ggplot(combined_predictions, aes(x = Predicted, y = residuals, color = Model)) +
+  geom_point() +  
+  geom_abline(slope = 0, intercept = 0, linetype = "dashed", color = "red") +  
+  labs(x = "Predicted Values", y = "Residuals", title = "Residuals vs. Predicted Values by Models", color = "Model") +
+  theme_minimal() + # Use a minimal theme for aesthetics
+  scale_shape_manual(values = c( 17, 18)) + # Set different shapes for each level of the label variable
+  scale_color_manual(values = c( "green", "blue"))
+plot(residual_plot)
+
+#Save plot
+residual_path = here("results","analysis","residual_plot.png")
+ggsave(filename = residual_path, plot=residual_plot) 
+```  
+
+For Model 2, the data points are generally scattered around the diagonal line and the predicted values are closer to the observed values than the data points for Model 1. 
+Thus, Model 2 with all covariates has better performance than Model 1, and is selected as the final model to describe the relationship between mortality rates and PCP supply.
+  
+
+
+
+# Retrieve model results for Model 2
+```{r}
+#Model results
+summ(fit_train_2)
+
+#Save results to a dataframe
+table_model<-tab_model(fit_train_2,show.icc = FALSE,show.re.var = FALSE,show.aic = TRUE,digits = 1,digits.p = 3)
+table_model_data <- sjtable2df::mtab2df(mtab = table_model, n_models =1) #convert html table to a dataframe
+
+#Save the result table in results folder
+tablepath = here("results","analysis", "Model_result.rds")
+saveRDS(table_model_data, file = tablepath)
+```  
+  
+
+# Apply final model to the test set
+
+Calculate predictions using the test set. 
+```{r}
+# Make predictions using test set
+pred_test <- predict(fit_train_2, newdata = test_data)
+pred_test<-data.frame(Observed=test_data$Rate2,Predicted=pred_test,Model="Test Set")
+
+
+# Prediction based on train set
+pred_train<-data.frame(Observed=train_data$Rate2,Predicted=pred2$Predicted,Model="Train Set")
+
+
+# Concatenate the predictions into one dataframe
+train_test <- bind_rows(pred_test, pred_train)
+```  
+
+
+Plot predicted versus observed values for both the train data and test data
+```{r}
+#Plot predicted versus observed values by train/test data
+train_test_plot<-ggplot(train_test, aes(x = Observed, y = Predicted, color  = Model, shape=Model)) +
+  geom_point() +  
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey") +  
+  labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values by Train/Test data", color = "Train/Test Data", shape ="Train/Test Data" ) +
+  theme_minimal() + # Use a minimal theme for aesthetics
+  scale_shape_manual(values = c(15, 17)) + # Set different shapes for train/test predictions
+  scale_color_manual(values = c("blue", "green"))
+
+plot(train_test_plot)
+
+#Save plot
+train_test_path = here("results","analysis","train_test_plot.png")
+ggsave(filename = train_test_path, plot=train_test_plot)
+```  
+The data points on the observed vs predicted plot using the test data scatter around the diagonal line, which indicates the predictions on the test data are generally accurate. 
+
+
+

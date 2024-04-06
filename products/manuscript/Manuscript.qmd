@@ -19,37 +19,87 @@ library(knitr)
 library(kableExtra)
 ```
 
-# Summary/Abstract
+# Abstract
 
-In this project, I will conduct a cross-sectional study on the county level and examine the potential association between age-adjusted all-cause mortality rate and primary care physician supply for US counties. A multilevel linear model will be used, and multiple potential confounders will be accounted for in the model.
+The all-cause mortality rate is an important indicator of general population health, and has been increasing in the US for the past ten years. Personal level access to primary care is highly associated with mortality, morbidity, and healthcare costs. There is a need to study how primary care physician supply on the geographic levels is associated with all-cause mortality rates in the US. In the project, I conducted a cross-sectional study on the county level and examine the potential association between age-adjusted all-cause mortality rate and primary care physician supply for US counties. Multilevel linear models were used to assess the association, and multiple potential confounders were accounted for in the models. Log-transformed PCP supply was negatively associated with all-cause mortality rate (beta=-19.9, 95% CI=-25.0--14.7, p-value\<.001), after adjustment for some socioeconomic measures. 
 
-{{< pagebreak >}}
-
+{{< pagebreak >}} 
 # Introduction
 
-## General Background Information
+The all-cause mortality rate serves as important indicator of general
+population health, reflecting the cumulative impact of social, economic,
+and healthcare factors on mortality outcomes [@desalvo_mortality_2006].
+In the United States, the age-adjusted all-cause mortality rate
+exhibited a steady decline from 1935 until 2014, signifying improvements
+in public health, healthcare delivery, and medical technology
+[@aizer_access_2005]. However, a notable increasing trend after 2015 has
+been observed [@woolf_new_2023].
 
-The all-cause mortality rate is an important indicator of general population health. Although the age-adjusted all-cause mortality rate consistently declined in the US from 1935 to 2014, a notable increasing trend after 2015 has been observed [@woolf_new_2023]. Personal level access to primary care is highly associated with mortality, morbidity, and healthcare costs [@peart_patient_2018]. There is a need to study how primary care physician supply on the geographic levels is associated with all-cause mortality rates in the US.
+Primary care, characterized by the provision of first-contact,
+person-focused, ongoing and comprehensive care, plays a pivotal role in
+the healthcare system. It is instrumental in preventing illnesses and
+death, managing chronic diseases, and coordinating care
+[@starfield_contribution_2005]. Personal level access to primary care is
+highly associated with mortality, morbidity, and healthcare costs
+[@peart_patient_2018]. Despite its importance, the distribution of
+primary care physicians (PCPs) varies significantly across the United
+States, with many areas experiencing pronounced shortages, especially
+for rural and underserved communities.
 
-My hypothesis is that primary care physician supply is negatively associated with age-adjusted all-cause mortality rate among US counties.Since counties can be considered nested within states or regions, a multilevel linear model will be used. The dependent variable will be mortality rate, main predictor will be primary care physician supply, and the socioeconomic measures will be the covariates in the model.
+Emerging research suggests a link between PCP supply and health
+outcomes, including mortality rates [@starfield_contribution_2005].
+However, the relationship between PCP supply and all-cause mortality
+rates at the geographic level remains inadequately explored. This gap in
+the literature highlights the need of comprehensive studies to
+understand how variations in PCP supply might influence mortality across
+US counties, accounting for socioeconomic disparities.
 
-{{< pagebreak >}}
+The hypothesis of this project is that primary care physician supply is
+negatively associated with age-adjusted all-cause mortality rate among
+US counties. Since counties can be considered nested within states or
+regions, multilevel linear models were used.
 
+{{< pagebreak >}} 
 # Methods
 
-Three data sources were used for this study. (1) Multiple Cause of Death File of 2021 from CDC WONDER (https://wonder.cdc.gov/mcd.html). I will obtain county-level age-adjusted all-cause mortality rates (deaths/100k people) from this source. (2) Area Health Resource File of 2021 from U.S. Department of Health & Human Services (https://data.hrsa.gov/data/download). I will obtain county-level primary care physician supply (physicians/100k people) and rural/urban categorization of the county from this file. (3) estimates of 2021 from 2017-2021 5-year American Community Survey (https://www.nhgis.org/). I will obtain states, regions, and some county-level socioeconomic measures as potential confounders for modeling. These measures may include %Living under poverty line, %Without a high school diploma, %Hispanic, %NH-Black, %Unemployed, %Without health insurance, and so on. Data from the three sources will be merged by using the FIPS code which serves as the ID for counties.
+Three data sources were used for this study. (1) Multiple Cause of Death
+File of 2021 from CDC WONDER (https://wonder.cdc.gov/mcd.html). County-level age-adjusted all-cause mortality rates (deaths/100k
+people) were obtained from this source. (2) Area Health Resource File of 2021 from
+U.S. Department of Health & Human Services
+(https://data.hrsa.gov/data/download). County-level
+primary care physician supply (physicians/100k people) and rural/urban
+categorization of the county were obtained from this file. (3) Estimates of 2021 from 2017-2021 5-year American Community Survey (https://www.nhgis.org/). States, regions, and some county-level socioeconomic measures as potential confounders for modeling were obtained from this source. These measures
+include %Living under poverty line, %Without a high school diploma,
+%Hispanic, %NH-Black, %Unemployed, %Without health insurance. Data from the three sources were merged by using the Federal Information Processing Standards (FIPS) code which served as the identifiers for counties.
 
-{{< pagebreak >}}
+The outcome was county-level age-adjusted all-cause mortality rate (n/100k), and the main predictor was county-level PCP supply (n/100k). The socioeconomic measures were consider as covariates. Since counties can be considered nested within states, multilevel linear models with random intercepts for states were used to assess the association. 
 
+Descriptive statistics were calculated and reported for the overall sample and subgroups by metro status. Bivariate association between the outcome with the main predictor and each of the covariates were assessed using bivariate multilevel linear models. Parameter coefficients, 95% confidence intervals of coefficients and p-values were reported. 
+
+To improve generalizability of results and prevent overfitting, the data was randomly split into a train set and a test set with 4/1 ratio. Cross-validation was used to assess the model performance of models with and without covariates. The final model (model with all covariates) was fit using the train set. Parameter coefficients, 95% confidence intervals of coefficients and p-values were reported. The final model fit was applied to the test set and made predictions. Predicted values vs observed values using the train set and test set were plotted to assess the prediction accuracy of the final model. All P-values were 2-sided and a P < 0.05 was considered statistically significant. RStudio was used to perform all analyses.       
+
+
+{{< pagebreak >}} 
 # Results
 
 ## Descriptive Statistics
-We included 3079 US counties in this study, 1162 of which were defined as metropolitan counties (Table 1). The mean age-adjusted all-cause mortality rates were 1380/100k for all counties, 1190/100k for metropolitan counties, and 1490/100k for the non-metro counties. Metro and non-metro counties had similar mean percentages of Hispanic population and unemployment rate. On average, metro counties had higher PCP supply(60.1/100k vs 46.2/100k) and percentages of NH-Black population (10.8% vs 7.8%). Average percentages of population without high school diploma (10.5% vs 13.0%), living under federal poverty line (12.6% vs 15.6%), and without health insurance (8.5% vs 10.3%) were lower among metro counties compared to non-metro counties. 
 
-According to the scatter plot between mortality rate and log-transformed PCP supply, there was a linear association between the two, and the association did not considerably differ by metro status of the county (Figure 1).
+We included 3079 US counties in this study, 1162 of which were defined
+as metropolitan counties (Table 1). The mean age-adjusted all-cause
+mortality rates were 1380/100k for all counties, 1190/100k for
+metropolitan counties, and 1490/100k for the non-metro counties. Metro
+and non-metro counties had similar mean percentages of Hispanic
+population and unemployment rate. On average, metro counties had higher
+PCP supply(60.1/100k vs 46.2/100k) and percentages of NH-Black
+population (10.8% vs 7.8%). Average percentages of population without
+high school diploma (10.5% vs 13.0%), living under federal poverty line
+(12.6% vs 15.6%), and without health insurance (8.5% vs 10.3%) were
+lower among metro counties compared to non-metro counties.
 
-Without adjustment of other factors, log-transformed PCP supply was negatively associated with mortality rate (beta=-37.3, 95% CI=-43.0- -31.5, p-value<.001), non-metro counties had significantly higher mortality rates (beta=310.5, 95% CI=287.2-333.8, p-value<.001) (Table 2); %Hispanic was negatively association with mortality rates (beta=-9.8, 95% CI=-11.0 - -8.7, p-value<.001), %NH-Black was not significantly associated with mortality rate (beta=0.3, 95% CI=-0.9-1.5, p-value=0.657) (Table 3); both %No high school diploma (beta=16.7, 95% CI=14.2 -19.1, p-value<.001) and  %Poverty (beta=23.5, 95% CI=21.4–25.6, p-value<.001) were positively associated with mortality rates (Table 4). 
-
+According to the scatter plot between mortality rate and log-transformed
+PCP supply, there was a linear association between the two, and the
+association did not considerably differ by metro status of the county
+(Figure 1).
 
 ```{r}
 #| label: tbl-schematic1
@@ -63,6 +113,7 @@ resulttable1 %>%
 ```
 
 {{< pagebreak >}}
+
 ```{r}
 #| label: fig-schematic1
 #| fig-cap: "Association between age-adjusted all-cause mortality rate and Log (PCP supply) by metropolitan status among US counties, 2011"
@@ -70,8 +121,22 @@ resulttable1 %>%
 include_graphics(here("results","analysis","figure1.png"))
 ```
 
+{{< pagebreak >}} 
+## Basic statistical analysis
 
-{{< pagebreak >}}
+Without adjustment of other measures, log-transformed PCP supply was
+negatively associated with mortality rate (beta=-37.3, 95% CI=-43.0-
+-31.5, p-value\<.001), non-metro counties had significantly higher
+mortality rates (beta=310.5, 95% CI=287.2-333.8, p-value\<.001) (Table
+2); %Hispanic was negatively associated with mortality rates
+(beta=-9.8, 95% CI=-11.0 - -8.7, p-value\<.001), %NH-Black was not
+significantly associated with mortality rate (beta=0.3, 95% CI=-0.9-1.5,
+p-value=0.657) (Table 3); both %No high school diploma (beta=16.7, 95%
+CI=14.2 -19.1, p-value\<.001) and %Poverty (beta=23.5, 95% CI=21.4–25.6,
+p-value\<.001) were positively associated with mortality rates (Table
+4); %Unemployed (beta=32.7, 95% CI=27.7 -37.7, p-value\<.001) and %No health insurance (beta=13.0, 95% CI=9.7 -16.4, p-value\<.001) were associated with higher mortality rates (Table 5).
+
+
 ```{r}
 #| label: tbl-schematic2a
 #| tbl-cap: "Results of unadjusted multilevel linear regression."
@@ -117,13 +182,33 @@ resulttable2d %>%
 ```
 
 
-
-## Basic statistical analysis
-
+{{< pagebreak >}} 
 ## Full analysis
 
-{{< pagebreak >}}
+The train set containted 2463 counties from all the 51 states. After adjusting for socioeconomic measures, the effect of log-transformed PCP supply on mortality rate was attenuated but still significant (beta=-19.9, 95% CI=-25.0--14.7, p-value\<.001). Non-metro counties had significantly higher mortality rates (beta=177.8, 95% CI=153.4-202.3, p-value\<.001); %Hispanic (beta=-13.4, 95% CI=-14.6 - -12.2, p-value\<.001) and %NH-Black (beta=-4.2, 95% CI=-5.2--3.1, p-value=0.657) were significantly associated with mortality rate; both %No high school diploma (beta=15.0, 95% CI=12.0 -18.1, p-value\<.001), %Poverty (beta=15.0, 95% CI=12.4–17.7, p-value\<.001) and %Unemployed (beta=8.7, 95% CI=3.5–13.9, p-value=0.001) were positively associated with mortality rates; %No health insurance (beta=-4.3, 95% CI=-7.8 --0.8, p-value=0.016) was negatively associated with mortality rates  (Table6). In Figure 2, the predicted/observed values for the test data illustrated similar distribution with the train data, indicating absence of considerable overfitting of the final model. 
 
+
+
+
+```{r}
+#| label: tbl-schematic_model
+#| tbl-cap: "Results of multivariate multilevel linear regression."
+#| echo: FALSE
+resulttable2d=readRDS(here("results","analysis","Model_result.rds"))
+
+resulttable2d %>%
+  kable() %>%
+  add_footnote("p, p-values; CI, 95% confidence interval.")
+```
+
+```{r}
+#| label: fig-schematic_test
+#| fig-cap: "Predicted vs Observed Values by Train/Test Data"
+#| echo: FALSE 
+knitr::include_graphics(here("results","analysis","train_test_plot.png"))
+```
+
+{{< pagebreak >}} 
 # Discussion
 
 ## Summary and Interpretation
