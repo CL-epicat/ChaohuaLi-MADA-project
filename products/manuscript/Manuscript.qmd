@@ -17,11 +17,12 @@ csl: ../../assets/apa.csl
 library(here)
 library(knitr)
 library(kableExtra)
+library(dplyr)
 ```
 
 # Abstract
 
-The all-cause mortality rate is an important indicator of general population health, and has been increasing in the US for the past ten years. Personal level access to primary care is highly associated with mortality, morbidity, and healthcare costs. There is a need to study how primary care physician supply on the geographic levels is associated with all-cause mortality rates in the US. In the project, I conducted a cross-sectional study on the county level and examine the potential association between age-adjusted all-cause mortality rate and primary care physician supply for US counties. Multilevel linear models were used to assess the association, and multiple potential confounders were accounted for in the models. Log-transformed PCP supply was negatively associated with all-cause mortality rate (beta=-19.9, 95% CI=-25.0--14.7, p-value\<.001), after adjustment for some socioeconomic measures. 
+The all-cause mortality rate is an important indicator of general population health, and has been increasing in the US for the past ten years. Personal level access to primary care is highly associated with mortality, morbidity, and healthcare costs. There is a need to study how primary care physician supply on the geographic levels is associated with all-cause mortality rates in the US. In the project, I conducted a cross-sectional study on the county level and examine the potential association between age-adjusted all-cause mortality rate and primary care physician supply for US counties. Multilevel linear models were used to assess the association, and multiple potential confounders were accounted for in the models. Log-transformed PCP supply was negatively associated with all-cause mortality rate (beta=-19.9, 95% CI=-25.0--14.7, p-value\<.001), after adjustment for some socioeconomic measures. A random forest model was also fitted to the data. The mean squared error(MSE) would increase by 10.5% if PCP supply is removed from the model, and node purity would increase by 19664217 by splits on PCP supply. The overall importance of PCP supply is generally low.  
 
 {{< pagebreak >}} 
 # Introduction
@@ -59,7 +60,7 @@ negatively associated with age-adjusted all-cause mortality rate among
 US counties. Since counties can be considered nested within states or
 regions, multilevel linear models were used.
 
-{{< pagebreak >}} 
+
 # Methods
 
 Three data sources were used for this study. (1) Multiple Cause of Death
@@ -76,10 +77,9 @@ The outcome was county-level age-adjusted all-cause mortality rate (n/100k), and
 
 Descriptive statistics were calculated and reported for the overall sample and subgroups by metro status. Bivariate association between the outcome with the main predictor and each of the covariates were assessed using bivariate multilevel linear models. Parameter coefficients, 95% confidence intervals of coefficients and p-values were reported. 
 
-To improve generalizability of results and prevent overfitting, the data was randomly split into a train set and a test set with 4/1 ratio. Cross-validation was used to assess the model performance of models with and without covariates. The final model (model with all covariates) was fit using the train set. Parameter coefficients, 95% confidence intervals of coefficients and p-values were reported. The final model fit was applied to the test set and made predictions. Predicted values vs observed values using the train set and test set were plotted to assess the prediction accuracy of the final model. All P-values were 2-sided and a P < 0.05 was considered statistically significant. RStudio was used to perform all analyses.       
+To improve generalizability of results and prevent over-fitting, the data was randomly split into a train set and a test set with 4/1 ratio. Cross-validation was used to assess the model performance of 3 models: (1) multilevel linear model without covariates, (2) multilevel linear model with covariates, (3) random forest with 100 trees. The multilevel linear model with covariates and the random forest model were fitted using the train set. Parameter coefficients, 95% confidence intervals of coefficients were reported for the multilevel linear model; variable importance was reported for the random forest model. The final model fit was then applied to the test set and made predictions. Predicted values vs observed values using the train set and test set were plotted to assess the prediction accuracy of the final models. RStudio was used to perform all analyses.       
 
 
-{{< pagebreak >}} 
 # Results
 
 ## Descriptive Statistics
@@ -112,7 +112,7 @@ resulttable1 %>%
   add_footnote("SD, standard deviation; PCP, primary care physician.")
 ```
 
-{{< pagebreak >}}
+
 
 ```{r}
 #| label: fig-schematic1
@@ -121,20 +121,11 @@ resulttable1 %>%
 include_graphics(here("results","analysis","figure1.png"))
 ```
 
-{{< pagebreak >}} 
+
+
 ## Basic statistical analysis
 
-Without adjustment of other measures, log-transformed PCP supply was
-negatively associated with mortality rate (beta=-37.3, 95% CI=-43.0-
--31.5, p-value\<.001), non-metro counties had significantly higher
-mortality rates (beta=310.5, 95% CI=287.2-333.8, p-value\<.001) (Table
-2); %Hispanic was negatively associated with mortality rates
-(beta=-9.8, 95% CI=-11.0 - -8.7, p-value\<.001), %NH-Black was not
-significantly associated with mortality rate (beta=0.3, 95% CI=-0.9-1.5,
-p-value=0.657) (Table 3); both %No high school diploma (beta=16.7, 95%
-CI=14.2 -19.1, p-value\<.001) and %Poverty (beta=23.5, 95% CI=21.4–25.6,
-p-value\<.001) were positively associated with mortality rates (Table
-4); %Unemployed (beta=32.7, 95% CI=27.7 -37.7, p-value\<.001) and %No health insurance (beta=13.0, 95% CI=9.7 -16.4, p-value\<.001) were associated with higher mortality rates (Table 5).
+Without adjustment of other measures, log-transformed PCP supply was negatively associated with mortality rate (beta=-37.3, 95% CI=-43.0--31.5), non-metro counties had significantly higher mortality rates (beta=310.5, 95% CI=287.2-333.8) (Table2); %Hispanic was negatively associated with mortality rates (beta=-9.8, 95% CI=-11.0 - -8.7), %NH-Black was not significantly associated with mortality rate (beta=0.3, 95% CI=-0.9-1.5) (Table 3); both %No high school diploma (beta=16.7, 95% CI=14.2 -19.1) and %Poverty (beta=23.5, 95% CI=21.4–25.6) were positively associated with mortality rates (Table 4); %Unemployed (beta=32.7, 95% CI=27.7 -37.7) and %No health insurance (beta=13.0, 95% CI=9.7 -16.4) were associated with higher mortality rates (Table 5).
 
 
 ```{r}
@@ -145,7 +136,7 @@ resulttable2a=readRDS(here("results","analysis","table2a.rds"))
 
 resulttable2a %>%
   kable() %>%
-  add_footnote("p, p-values; CI, 95% confidence interval.")
+  add_footnote("CI, 95% confidence interval.")
 ```
 
 ```{r}
@@ -156,7 +147,7 @@ resulttable2b=readRDS(here("results","analysis","table2b.rds"))
 
 resulttable2b %>%
   kable() %>%
-  add_footnote("p, p-values; CI, 95% confidence interval.")
+  add_footnote("CI, 95% confidence interval.")
 ```
 
 ```{r}
@@ -167,7 +158,7 @@ resulttable2c=readRDS(here("results","analysis","table2c.rds"))
 
 resulttable2c %>%
   kable() %>%
-  add_footnote("p, p-values; CI, 95% confidence interval.")
+  add_footnote("CI, 95% confidence interval.")
 ```
 
 ```{r}
@@ -178,14 +169,19 @@ resulttable2d=readRDS(here("results","analysis","table2d.rds"))
 
 resulttable2d %>%
   kable() %>%
-  add_footnote("p, p-values; CI, 95% confidence interval.")
+  add_footnote("CI, 95% confidence interval.")
 ```
 
 
-{{< pagebreak >}} 
+
 ## Full analysis
 
-The train set containted 2463 counties from all the 51 states. After adjusting for socioeconomic measures, the effect of log-transformed PCP supply on mortality rate was attenuated but still significant (beta=-19.9, 95% CI=-25.0--14.7, p-value\<.001). Non-metro counties had significantly higher mortality rates (beta=177.8, 95% CI=153.4-202.3, p-value\<.001); %Hispanic (beta=-13.4, 95% CI=-14.6 - -12.2, p-value\<.001) and %NH-Black (beta=-4.2, 95% CI=-5.2--3.1, p-value=0.657) were significantly associated with mortality rate; both %No high school diploma (beta=15.0, 95% CI=12.0 -18.1, p-value\<.001), %Poverty (beta=15.0, 95% CI=12.4–17.7, p-value\<.001) and %Unemployed (beta=8.7, 95% CI=3.5–13.9, p-value=0.001) were positively associated with mortality rates; %No health insurance (beta=-4.3, 95% CI=-7.8 --0.8, p-value=0.016) was negatively associated with mortality rates  (Table6). In Figure 2, the predicted/observed values for the test data illustrated similar distribution with the train data, indicating absence of considerable overfitting of the final model. 
+With cross-validation, the random forest model yielded better performance than the the multilevel linear model with all covariates (supplement material). Since the random forest model results are not as interpretable as the results from the multilevel linear model, results for both models are reported. The parameter estimates from the multilevel linear model help us understand how the mortality rate is related to the PCP supply.
+
+
+A. Multilevel Linear Regression
+
+The train set contained 2463 counties from all the 51 states. After adjusting for socioeconomic measures, the effect of log-transformed PCP supply on mortality rate was attenuated but still significant (beta=-19.9, 95% CI=-25.0--14.7). Non-metro counties had significantly higher mortality rates (beta=177.8, 95% CI=153.4-202.3); %Hispanic (beta=-13.4, 95% CI=-14.6 - -12.2) and %NH-Black (beta=-4.2, 95% CI=-5.2--3.1) were significantly associated with mortality rate; both %No high school diploma (beta=15.0, 95% CI=12.0 -18.1), %Poverty (beta=15.0, 95% CI=12.4–17.7) and %Unemployed (beta=8.7, 95% CI=3.5–13.9) were positively associated with mortality rates; %No health insurance (beta=-4.3, 95% CI=-7.8 --0.8) was negatively associated with mortality rates  (Table6). In Figure 2, the predicted/observed values for the test data illustrated similar distribution with the train data, indicating absence of considerable over-fitting of the model. 
 
 
 
@@ -194,27 +190,58 @@ The train set containted 2463 counties from all the 51 states. After adjusting f
 #| label: tbl-schematic_model
 #| tbl-cap: "Results of multivariate multilevel linear regression."
 #| echo: FALSE
-resulttable2d=readRDS(here("results","analysis","Model_result.rds"))
+resulttable2e=readRDS(here("results","analysis","Model_result.rds"))
 
-resulttable2d %>%
+resulttable2e %>%
+  select(-p) %>%
   kable() %>%
-  add_footnote("p, p-values; CI, 95% confidence interval.")
+  add_footnote("CI, 95% confidence interval.")
 ```
 
 ```{r}
 #| label: fig-schematic_test
-#| fig-cap: "Predicted vs Observed Values by Train/Test Data"
+#| fig-cap: "Predicted vs Observed Values by Train/Test Data (Multilevel Linear Regression)"
 #| echo: FALSE 
 knitr::include_graphics(here("results","analysis","train_test_plot.png"))
 ```
 
-{{< pagebreak >}} 
+
+B. Random Forest Model
+
+With the same train set, a random forest with 100 trees was fitted. According to the importance variable table, the mean squared error(MSE) would increase by 10.5% if PCP supply is removed from the model, and node purity would increase by 19664217 by splits on PCP supply. The overall importance of PCP supply is generally low among the variables inspected. The MSE would increase by 28.6% if %Hispanic is removed from the model, and node purity would increase by 69864543 by splits on state, making these two measures the most important variables in predicting all-cause mortality rate. In Figure 3, the predicted values were fairly close to the observed values for the test data, indicating a good performance of the random forest model. However, the model performed slightly better for the train set compared to the test set. This might indicate the presence of slight over-fitting of the random forest model. 
+
+
+
+```{r}
+#| label: tbl-schematic_rf
+#| tbl-cap: "Variable Importance in the Random Forest Model."
+#| echo: FALSE
+resulttable2f=readRDS(here("results","analysis","importance.rds"))
+
+resulttable2f %>%
+  kable() 
+```
+
+```{r}
+#| label: fig-schematic_test2
+#| fig-cap: "Predicted vs Observed Values by Train/Test Data (Random Forest Model)"
+#| echo: FALSE 
+knitr::include_graphics(here("results","analysis","train_test_plot2.png"))
+```
+
+ 
 # Discussion
 
 ## Summary and Interpretation
+In this analysis, a multilevel linear model and a random forest model were fit to the data. With the multilevel linear model, PCP supply was found to be negatively associated with all-cause mortality rate among US counties after adjustment for some covariates. The random forest model results indicated that although PCP supply contributed to the predictions of mortality rate, it was not an important predictor. Both models were fitted to a test data, and made relatively accurate predictions. These findings suggest PCP supply might be related to all-cause mortality rate on the county level, but the potential of using PCP supply to predicted mortality rate is limited.   
 
 ## Strengths and Limitations
+This project has several strengths. Firstly, both multilevel linear model and random forest model were used for analysis, which helped make the findings robust. Secondly, cross-validation was used to assess model performance and a test data set was used for the final evaluation of model predictions, which reduced the risk of model over-fitting. Besides, this analysis included 98% of all counties in the US, the findings are thus representative.  
+
+There are also some limitations. This cross-sectional study only provides a snapshot of data at the same time period, thus causality between the outcome and predictors cannot be established. Furthermore, this study should have included more predictors, so that a variable selection process can be performed. 
 
 ## Conclusions
+PCP supply is negatively associated with all-cause mortality rate among US counties, but it is not a strong predictor for mortality rate. Future study should explore potential mechanisms through which access to primary care may influence general health on the population level. 
+
 
 # References

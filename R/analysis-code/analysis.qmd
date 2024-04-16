@@ -23,6 +23,8 @@ library(jtools)
 library(rsample)
 library(tidymodels)
 library(multilevelmod)
+library(randomForest)
+library(randomForestExplainer)
 ``` 
   
   
@@ -144,7 +146,7 @@ saveRDS(table2dd, file = table2dpath)
 #add log-transformed PCP, and drop county id and original pcp variable
 final_data<-project %>%
   mutate(log_PCP=log(pcp_100k+0.01)) %>%
-  select(-TL_GEO_ID, -pcp_100k)
+  select(-TL_GEO_ID)
 
 #save dataset to processed-data folder
 save_data_location <- here("data","processed-data","final_data.rds")
@@ -169,11 +171,13 @@ test_data  <- testing(data_split)
 ``` 
   
   
-# Fit models with and without covariates and evaluate performance using 10-fold cross-validation. 
-  Model 1: log_PCP as the only predictor;
+# Fit 3 models and evaluate performance using 10-fold cross-validation. 
+  Model 1: linear mixed effect model: log_PCP as the only predictor;
   
-  Model 2: log_PCP and all covariates.
-
+  Model 2: linear mixed effect model: log_PCP and all covariates;
+  
+  Model 3: random forest model; predictors = PCP and all covariates; number of trees=100
+  
 ## create 10-foler cross-validation sets
 ```{r}
 #reset the seed
@@ -184,7 +188,7 @@ folds <- vfold_cv(train_data, v = 10)
 ``` 
 
 
-## Fit Model 1: log_PCP as the only predictor
+## Fit Model 1: linear mixed effect model: log_PCP as the only predictor
 ```{r}
 #specify linear mixed effect model
 lmer_spec <- 
@@ -208,7 +212,7 @@ collect_metrics(fit_cv_1)
 ``` 
 
 
-## Fit Model 2: log_PCP and all covariates.
+## Fit Model 2: linear mixed effect model: log_PCP and all covariates.
 ```{r}
 #create workflow for Model 3 with log_PCP and all covariates
 flow_2 <- 
@@ -230,16 +234,47 @@ fit_cv_2 <-
 collect_metrics(fit_cv_2)
 ``` 
 
-  Model 1: log_PCP as the only predictor - RMSE=358
+## Fit Model 3: random forest model; predictors = PCP and all covariates; number of trees=100
+```{r}
+library(ranger)
+#random Forest model specification
+rf_spec <- rand_forest(trees = 100) %>%  # using 100 trees
+  set_engine("ranger") %>%
+  set_mode("regression")
+
+#workflow creation
+rf_workflow <- workflow() %>%
+  add_formula(Rate2 ~pcp_100k +metro+hispanic_pct+NHB_pct+ noHS_pct+ poverty_pct
+              + unemployed_pct+ uninsured_pct + state) %>%
+  add_model(rf_spec)
+
+#model fitting and evaluation
+set.seed(rngseed)
+fit_rf <- fit_resamples(
+  rf_workflow,
+  folds,
+  control = control_resamples(save_pred = TRUE)
+)
+
+#print the performance of model(RMSE, R-squared)
+results_rf <- collect_metrics(fit_rf)
+print(results_rf)
+```
   
-  Model 2: log_PCP and all covariates    - RMSE=292
 
-Model 2 with covariates has much better performance. 
+  Model 1: log_PCP as the only predictor - RMSE=358, R-squared=0.05
+  
+  Model 2: log_PCP and all covariates    - RMSE=292, R-squared=0.37
+  
+  Model 3: Random Forest Model           - RMSE=248, R-squared=0.54.
+
+The random forest model has better performance than either of the linear mixed effect models. 
 
 
-## Fit Model 1 and Model 2 with the train set, and create predicted vs observed values plot
 
-Fit Model 1 and Model 2 with train set.
+## Fit Model 1, Model 2 and Model 3 with the train set, and create predicted vs observed values plot
+
+Fit Model 1, Model 2 and Model 3 with train set.
 ```{r}
 #Fit Model 1 with train set
 fit_train_1<-lme4::lmer(Rate2 ~ log_PCP + (1|state), data=train_data)
@@ -248,6 +283,10 @@ fit_train_1<-lme4::lmer(Rate2 ~ log_PCP + (1|state), data=train_data)
 fit_train_2<-lme4::lmer(Rate2 ~ log_PCP+metro+hispanic_pct+NHB_pct+
                                 noHS_pct+ poverty_pct+ unemployed_pct+
                                 uninsured_pct + (1|state), data=train_data)
+
+#Fit Model 3 with train set
+set.seed(rngseed)
+rf_fit <- fit(rf_workflow, data = train_data)
 ``` 
   
   
@@ -262,8 +301,12 @@ pred1<-data.frame(Observed=train_data$Rate2,Predicted=pred1,Model="Model 1: Log(
 pred2 <- predict(fit_train_2, newdata=train_data) 
 pred2<-data.frame(Observed=train_data$Rate2,Predicted=pred2,Model="Model 2: All predictors")
 
+# Prediction for Model 3
+pred3 <- predict(rf_fit, new_data=train_data) 
+pred3<-data.frame(Observed=train_data$Rate2,Predicted=pred3$.pred,Model="Model 3: Random Forest")
+
 # Concatenate the predictions into one dataframe
-combined_predictions <- bind_rows(pred1, pred2)
+combined_predictions <- bind_rows(pred1, pred2, pred3)
 ``` 
   
   
@@ -275,8 +318,8 @@ predict_plot<-ggplot(combined_predictions, aes(x = Observed, y = Predicted, colo
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey") +  
   labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values by Models", color = "Model") +
   theme_minimal() + # Use a minimal theme for aesthetics
-  scale_shape_manual(values = c( 17, 18)) + # Set different shapes for each level of the label variable
-  scale_color_manual(values = c( "green", "blue"))
+  scale_shape_manual(values = c( 17, 18, 19)) + # Set different shapes for each level of the label variable
+  scale_color_manual(values = c( "green", "blue","red"))
 plot(predict_plot)
 
 #save plot 
@@ -293,11 +336,11 @@ combined_predictions <- combined_predictions %>%
 #Plot residuals vs predicted values by models
 residual_plot<-ggplot(combined_predictions, aes(x = Predicted, y = residuals, color = Model)) +
   geom_point() +  
-  geom_abline(slope = 0, intercept = 0, linetype = "dashed", color = "red") +  
+  geom_abline(slope = 0, intercept = 0, linetype = "dashed", color = "grey") +  
   labs(x = "Predicted Values", y = "Residuals", title = "Residuals vs. Predicted Values by Models", color = "Model") +
   theme_minimal() + # Use a minimal theme for aesthetics
   scale_shape_manual(values = c( 17, 18)) + # Set different shapes for each level of the label variable
-  scale_color_manual(values = c( "green", "blue"))
+  scale_color_manual(values = c( "green", "blue","red"))
 plot(residual_plot)
 
 #Save plot
@@ -305,10 +348,9 @@ residual_path = here("results","analysis","residual_plot.png")
 ggsave(filename = residual_path, plot=residual_plot) 
 ```  
 
-For Model 2, the data points are generally scattered around the diagonal line and the predicted values are closer to the observed values than the data points for Model 1. 
-Thus, Model 2 with all covariates has better performance than Model 1, and is selected as the final model to describe the relationship between mortality rates and PCP supply.
-  
+For Model 3, the data points are generally scattered around the diagonal line and the predicted values are closer to the observed values than the data points for Model 1 and Model 2. Thus, the random forest model can predict the outcome better than the other two models.
 
+But since the random forest model results are not as interpretable as the results from linear mixed effect models, I decide to report results for both model 2(linear mixed effect model) and model 3 (random forest). The point of reporting results from model 2 is that the parameter estimates can tell us how the mortality rate is related to the PCP supply. 
 
 
 # Retrieve model results for Model 2
@@ -326,8 +368,25 @@ saveRDS(table_model_data, file = tablepath)
 ```  
   
 
-# Apply final model to the test set
+# Retrieve model results for Model 3
+```{r}
+#Model results
+set.seed(rngseed)
+rf_result <- randomForest(Rate2 ~pcp_100k +metro+hispanic_pct+NHB_pct+ noHS_pct+ poverty_pct + unemployed_pct+ uninsured_pct + state, data=train_data, ntree=100, keep.forest=FALSE, importance=TRUE)
+rf_result
 
+#importance table for Random Forest
+import_table<-randomForest::importance(rf_result)
+import_table
+#save the table to a rds file
+importance_path = here("results","analysis", "importance.rds")
+saveRDS(import_table, file = importance_path)
+```  
+
+
+# Apply models to the test set
+
+## Model 2
 Calculate predictions using the test set. 
 ```{r}
 # Make predictions using test set
@@ -363,5 +422,41 @@ ggsave(filename = train_test_path, plot=train_test_plot)
 ```  
 The data points on the observed vs predicted plot using the test data scatter around the diagonal line, which indicates the predictions on the test data are generally accurate. 
 
+
+## Model 3
+Calculate predictions using the test set. 
+```{r}
+# Make predictions using test set
+pred3_test <- predict(rf_fit, new_data=test_data) 
+pred3_test<-data.frame(Observed=test_data$Rate2,Predicted=pred3_test$.pred,Model="Test Set")
+
+
+# Prediction based on train set
+pred3_train<-data.frame(Observed=train_data$Rate2,Predicted=pred3$Predicted,Model="Train Set")
+
+
+# Concatenate the predictions into one dataframe
+train_test3 <- bind_rows(pred3_test, pred3_train)
+```  
+
+
+Plot predicted versus observed values for both the train data and test data
+```{r}
+#Plot predicted versus observed values by train/test data
+train_test_plot2<-ggplot(train_test3, aes(x = Observed, y = Predicted, color  = Model, shape=Model)) +
+  geom_point() +  
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey") +  
+  labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values by Train/Test data", color = "Train/Test Data", shape ="Train/Test Data" ) +
+  theme_minimal() + # Use a minimal theme for aesthetics
+  scale_shape_manual(values = c(15, 17)) + # Set different shapes for train/test predictions
+  scale_color_manual(values = c("blue", "green"))
+
+plot(train_test_plot2)
+
+#Save plot
+train_test_path2 = here("results","analysis","train_test_plot2.png")
+ggsave(filename = train_test_path2, plot=train_test_plot2)
+```  
+The data points on the observed vs predicted plot using the test data scatter around the diagonal line very closely, which indicates the predictions on the test data are fairly accurate.
 
 

@@ -88,13 +88,15 @@ The correlations among the covariates are relatively low. We can keep all the co
 {{< pagebreak >}}
 # Model Performance
 
-  Model 1: Mortality rate as outcome, log_PCP as the only predictor - RMSE=358
+  Model 1: Linear mixed effect model: log_PCP as the only predictor - RMSE=358, R-squared=0.05
   
-  Model 2: Mortality rate as outcome, log_PCP and all covariates    - RMSE=292
+  Model 2: Linear mixed effect model: log_PCP and all covariates    - RMSE=292, R-squared=0.37
+  
+  Model 3: Random Forest Model           - RMSE=248, R-squared=0.54.
 
 ```{r}
 #| label: fig-schematic4
-#| fig-cap: "Predicted vs Observed Values by Models with and without Covariates."
+#| fig-cap: "Predicted vs Observed Values by Models."
 #| echo: FALSE 
 knitr::include_graphics(here("results","analysis","predict_observed.png"))
 ```
@@ -102,11 +104,11 @@ knitr::include_graphics(here("results","analysis","predict_observed.png"))
 
 ```{r}
 #| label: fig-schematic5
-#| fig-cap: "Residuals vs Predicted Values by Models with and without Covariates."
+#| fig-cap: "Residuals vs Predicted Values by Models."
 #| echo: FALSE 
 knitr::include_graphics(here("results","analysis","residual_plot.png"))
 ```
 
-The full model with covariates has smaller RMSE, and predicted values closer to the 
-observed values. Thus, Model 2 with all covariates is selected as the final model to 
-describe the relationship between mortality rates and PCP supply. 
+For Model 3, the data points are generally scattered around the diagonal line and the predicted values are closer to the observed values than the data points for Model 1 and Model 2. Thus, the random forest model can predict the outcome better than the other two models.
+
+But since the random forest model results are not as interpretable as the results from linear mixed effect models, I decide to report results for both model 2(linear mixed effect model) and model 3 (random forest). The point of reporting results from model 2 is that the parameter estimates can tell us how the mortality rate is related to the PCP supply. 
