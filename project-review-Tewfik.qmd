@@ -1,0 +1,149 @@
+---
+title: Project Review 
+author: Ranni Tewfik
+date: 04-24-2024
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+---
+
+# Overview
+
+Title of project: "All-cause Mortality Rates and Primary Care Physician Supply in US Counties 2021"
+
+Name of project author: Chaohua Li
+
+Name of project reviewer: Ranni Tewfik
+
+
+## Background, Context, and Motivation
+How well is the context of the project described? Is a comprehensive background given, including summary of previous/related work? Is the project well placed into the context of existing work (including proper referencing of existing work). Is it clear why the project was undertaken and what new information it hopes to provide?
+
+### Feedback and Comments
+
+The context of the project is well described, and you provided a concise yet sufficient background on the topic of your project. I appreciate the inclusion of an abstract to summarize your project, and you use the introduction section well to lay out what has been done in previous research, as well as how your project will address gaps in the literature. I've included some specific comments for each section below.
+
+*Abstract:* Regarding grammar, I think "examine" should be "examined" in the fourth sentence. Also, did you conduct a cross-sectional study (i.e., design the study and collect the data yourself), or do you mean you analyzed data from a cross-sectional study? I'm not sure if you need to include "log-transformed" in the sentence with your main results, as it should be explained in the methods section. Consider listing the variables you adjusted for instead of stating "some socioeconomic measures". With regard to formatting the results, I suggest you include spaces between letters, equal signs, and other operators to make them easier to read. Is "19664217" an error in the results for the random forest model? Sorry, I don't know enough about how to report results from those models. Finally, the conclusion sentence in the abstract should add something like "... in the association with all-cause mortality" to re-establish the exposure-outcome relationship.
+
+*Introduction:* You may need to add a citation for the last sentence of the second paragraph. The very last sentence should probably be included in the methods section.
+
+### Summary Assessment
+* strong contextualization and motivation
+
+
+## Question Description
+How well and clear are the question(s)/hypotheses the project aims to address described? Is it clear how the questions relate to the data?
+
+### Feedback and Comments
+
+I found it fairly easy to identify your research question and hypothesis, as you clearly established both in the last two paragraphs of the introduction section. I like how the hypothesis is basically its own paragraph, and it's evident that the research question relates to the cross-sectional data.
+
+### Summary Assessment
+* question/hypotheses fully clear
+
+
+## Data description
+How well is the data overall described? Is the source provided? Is a codebook or other meta-information available that makes it clear what the data is? 
+
+### Feedback and Comments
+
+Overall, I think you explained the data well in the methods section. You should consider re-formatting how you present the data sources in that section, as it may be difficult to read and understand for some people. Perhaps you could have each source as a separate line with what each source was used for in a numbered or bullet format. Also, I appreciate that you included the codebooks for the data sources. A suggestion would be to compile the variables you used for your analysis into one codebook, as the codebooks for the original data can be quite lengthy. I apologize if you included that somewhere and I missed it.
+
+### Summary Assessment
+* source and overall structure of data well explained
+
+
+## Data Wrangling and Exploratory Analysis
+How well is the data cleaned/processed and explored? Are all steps reasonable and well explained? Are alternatives discussed and considered? Are meaningful exploratory results shown (e.g. in the supplementary materials)?
+
+### Feedback and Comments
+
+Good job on cleaning, processing, and exploring the data. For the "eda.qmd" file, I really like how you presented the histograms for the numeric variables in a 8-panel png file. Your exploratory analysis had a great workflow and was actually quite enjoyable to go through. You could add a correlation plot to better visualize the correlation among covariates, but the correlation matrix is sufficient. And this may be a personal preference, but you may want to move the code for Table 1 (descriptive statistics) from the "analysis.qmd" file to the "eda.qmd" file. Finally, I know you looked at metro vs. non-metro mortality rates, but are there other stratified plots/relationships you could investigate to get an even fuller exploration of the data and any potential interactions?
+
+### Summary Assessment
+* essentially no weaknesses in wrangling and exploratory component
+
+
+## Appropriateness of Analysis
+Were the analysis methods appropriate for the data? Was the analysis done properly? Were different components of the analysis (e.g. performance measure, variable selection, data pre-processing, model evaluation) done in the best way possible and explained well?
+
+### Feedback and Comments
+
+In general, I believe your analysis methods were adequate for the data. I'm not familiar with multilevel linear models, but you clearly explained how to interpret the results of intra-class correlation methods, as well as the how and why to do log transformation of data. I can't comment on how well the bivariate multilevel models with mortality rate as the outcome were fitted, but it seems the analysis for model fitting was done properly, including splitting the data into train/test and using cross-validation. I appreciate that you summarized each model in lines 175-179 in the "analysis.qmd" file. Again, I'm not familiar with multilevel linear models, but I'll assume RMSE is an acceptable metric to compare performace across such models. How did you decide to include all covariates for Model 2? Could you perform a backward elimination process to see if the best model has fewer variables. Finally, consider adding a conclusion/summary section at the end of the "analysi.qmd" that breifly describes what you did and how you evaluated the three models to choose the "best" model.
+
+### Summary Assessment
+* strong and reasonable analysis
+
+
+## Presentation
+How well are results presented? Are tables and figures easy to read and understand? Are the main figures/tables publication level quality? 
+
+### Feedback and Comments
+
+Your figures are presented beautifully in the manuscript, and I had no trouble understanding them. However, I suggest playing around with the R code for the tables to make them more "publication level quality". For example, consider altering the indentation/spacing in the tables, as well as adding lines to separate the groups/values, so that the information is easier to read. This is something I struggled with a lot in my own project. For my Table 1, I used the tbl_summary() and as_gt() functions from the "gtsummary" and "gt" packages, respectively. 
+
+### Summary Assessment
+* results are presented ok, with room for improvement
+
+
+## Discussion/Conclusions
+Are the study findings properly discussed? Are strengths and limitations acknowledged? Are findings interpreted properly?
+
+### Feedback and Comments
+
+I think your discussion section in the manuscript is quite strong. You presented a summary of the findings without re-stating the results provided earlier in the manuscript, and the strengths and limitations were acknowledged. Job well done!
+
+### Summary Assessment
+* strong, complete and clear discussion
+
+
+## Structure
+Is the project well structured? Are files in well labeled folders? Do files have reasonable names? Are all "junk" files not needed for analysis/reproduction removed? By just looking at files and folders, can you get an idea of how things fit together?
+
+### Feedback and Comments
+
+I think your project is so well structured that I didn't even need to read all "README.md" files to understand how all the files and folders fit together. I'm personally not a fan of having a separate "README.md" file for each folder, but yours were concise and helpful for anyone only looking at one specific folder. All files are in well labeled folders with reasonable names. The only "junk" file you should consider removing is the "~$nuscript.docx" file in the "manuscript" subfolder, although this may have been generated without you knowing.
+
+### Summary Assessment
+* well structured
+
+
+## Documentation 
+How well is the project documented? Are you able to understand each step of the whole analysis, each decision that was made, and each line of code? Is enough information provided as comments in code or as part of Rmd files? 
+
+### Feedback and Comments
+
+Overall, I was able to understand each step of the whole analysis. The lines of code are thorough and well documented, especially in the "analysis.qmd" file. For the "processingfile.qmd", I recommend adding a brief summary/explanation after each code chunk, similar to what you did in the "eda.qmd" file. It may not be completely necessary, but it could help those unfamiliar with the project and/or R coding better understand what specifically happened to the data after running each code chunk.
+
+### Summary Assessment
+* fully and well documented
+
+
+## Reproducibility
+Are all results fully reproducible? Is documentation provided which clearly explains how to reproduce things, and does it work without the need for any manual intervention? Are you able to re-run the whole analysis without having to do manual interventions/edits?
+
+### Feedback and Comments
+
+All of your files had fully reproducible codes, with exception of the "analysis.qmd" file. There were errors in lines 211, 234, and 260 when trying to get the RMSE values for the models. There was also an error in line 289 when trying to fit model 3 with the train set. Because of that error, there were additional errors in line 305 (predictions for model 3), line 316 (plot of predicted vs. observed values), line 333 (plot of residuals vs. predicted values), line 430 (model 3 predictions using test set), and line 446 (plot of predicted vs. observed values by train/test data for model 3).
+
+### Summary assessment
+* small parts not reproducible or required manual intervention
+
+
+## Thoroughness
+How thorough was the overall study? Were alternatives (e.g. different ways of processing the data or different models) considered? Were alternatives discussed? Were the questions/hypotheses fully and thoroughly addressed?
+
+### Feedback and Comments
+
+The overall study was very thorough, and you provided several types of models to compare in the analysis. It seemed the research question/hypothesis was always considered when discussing each step of the analysis. The discussion section of the manuscript was a good summary of the whole process and a final address of the research question to bring it full circle.
+
+### Summary Assessment
+* strong level of thoroughness
+
+
+## Further Comments
+
+I'm really impressed with your project. One final suggestion I can offer is to include all required packages at the top of each script in the "Loaded packages" section. I was not able to run line 117 in the "analysis.qmd" file because a line of code to load the "sjtable2df" package was not included. Other than that, I thoroughly enjoyed your work, and I look forward to reading your final submission!
+
