@@ -1,10 +1,9 @@
-This folder contains a simple made-up data-set in an Excel file.
+This folder contains raw data and orignial codebooks for the data. 
 
-It contains the variables `Height`, `Weight` and `Gender` of a few imaginary individuals.
+(1) cdc_wonder_mortality.txt provides data from Multiple Cause of Death File of 2021 from CDC WONDER.The variables in this file are self-explaining, so no codebook is provided for this data.
 
-The dataset purposefully contains some faulty entries that need to be cleaned.
+(2) ahrf2023.sas7bdat provides data from Area Health Resource File of 2021.
+AHRF 2022-2023 codebook is the codebook for this data source. 
 
-Generally, any dataset should contain some meta-data explaining what each variable in the dataset is. (This is often called a **Codebook**.) For this simple example, the codebook is given as a second sheet in the Excel file.
-
-This raw data-set should generally not be edited by hand. It should instead be loaded and processed/cleaned using code.
-
+(3) nhgis0107_ds254_20215_county provides data from 2017-2021 5-year American Community Survey.
+acs_county_codebook is the codebook for this data source. 

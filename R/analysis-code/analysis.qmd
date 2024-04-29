@@ -25,6 +25,7 @@ library(tidymodels)
 library(multilevelmod)
 library(randomForest)
 library(randomForestExplainer)
+library(sjtable2df)
 ``` 
   
   
@@ -314,7 +315,7 @@ Plot Predicted vs Observed values for both models
 ```{r}
 #Plot predicted vs observed values by models
 predict_plot<-ggplot(combined_predictions, aes(x = Observed, y = Predicted, color = Model)) +
-  geom_point() +  
+  geom_point( alpha=0.5) +  
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey") +  
   labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values by Models", color = "Model") +
   theme_minimal() + # Use a minimal theme for aesthetics
@@ -335,7 +336,7 @@ combined_predictions <- combined_predictions %>%
 
 #Plot residuals vs predicted values by models
 residual_plot<-ggplot(combined_predictions, aes(x = Predicted, y = residuals, color = Model)) +
-  geom_point() +  
+  geom_point(alpha=0.5) +  
   geom_abline(slope = 0, intercept = 0, linetype = "dashed", color = "grey") +  
   labs(x = "Predicted Values", y = "Residuals", title = "Residuals vs. Predicted Values by Models", color = "Model") +
   theme_minimal() + # Use a minimal theme for aesthetics
@@ -407,7 +408,7 @@ Plot predicted versus observed values for both the train data and test data
 ```{r}
 #Plot predicted versus observed values by train/test data
 train_test_plot<-ggplot(train_test, aes(x = Observed, y = Predicted, color  = Model, shape=Model)) +
-  geom_point() +  
+  geom_point( alpha=0.5) +  
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey") +  
   labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values by Train/Test data", color = "Train/Test Data", shape ="Train/Test Data" ) +
   theme_minimal() + # Use a minimal theme for aesthetics
@@ -444,7 +445,7 @@ Plot predicted versus observed values for both the train data and test data
 ```{r}
 #Plot predicted versus observed values by train/test data
 train_test_plot2<-ggplot(train_test3, aes(x = Observed, y = Predicted, color  = Model, shape=Model)) +
-  geom_point() +  
+  geom_point( alpha=0.5) +  
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey") +  
   labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values by Train/Test data", color = "Train/Test Data", shape ="Train/Test Data" ) +
   theme_minimal() + # Use a minimal theme for aesthetics
